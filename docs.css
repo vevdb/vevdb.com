@@ -202,6 +202,9 @@ a:focus-visible {
   vertical-align: top;
 }
 .markdown-body th { background: #eaf0ee; }
+.markdown-body .align-left { text-align: left; }
+.markdown-body .align-center { text-align: center; }
+.markdown-body .align-right { text-align: right; }
 .markdown-body hr {
   margin: 3rem 0;
   border: 0;

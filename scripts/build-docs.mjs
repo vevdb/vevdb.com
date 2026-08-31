@@ -187,7 +187,10 @@ function renderDocument(config, markdown, currentFile, routeByFile, repositoryRo
       }
     }
   });
-  return marked.parse(markdown);
+  return marked.parse(markdown).replace(
+    / align="(left|center|right)"/g,
+    ' class="align-$1"'
+  );
 }
 
 function renderIndex(config) {
@@ -229,6 +232,9 @@ for (const item of documents) {
     throw new Error('Configured documentation file does not exist: ' + sourceFile);
   }
   routeByFile.set(sourceFile, item);
+  for (const alias of item.aliases || []) {
+    routeByFile.set(path.resolve(sourceDir, alias), item);
+  }
 }
 
 fs.mkdirSync(outputDir, { recursive: true });

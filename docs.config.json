@@ -107,10 +107,17 @@
           "description": "C, Clojure, Java, Odin, and other clients."
         },
         {
-          "file": "benchmarks.md",
-          "label": "Benchmarks",
+          "file": "../bench/results/2026-08-27.md",
+          "aliases": ["../bench/results/2026-07-29.md"],
+          "label": "Benchmark results",
           "slug": "benchmarks",
-          "description": "Workloads and reproducible performance measurements."
+          "description": "Dated same-machine query and transaction measurements."
+        },
+        {
+          "file": "benchmarks.md",
+          "label": "Running benchmarks",
+          "slug": "benchmarking",
+          "description": "Workloads, commands, and reproduction instructions."
         },
         {
           "file": "musicbrainz.md",
