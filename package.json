@@ -1,0 +1,14 @@
+{
+  "name": "vevdb-website",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:docs": "node scripts/build-docs.mjs"
+  },
+  "dependencies": {
+    "marked": "18.0.11"
+  }
+}

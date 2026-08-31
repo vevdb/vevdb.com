@@ -1,0 +1,124 @@
+{
+  "siteName": "VevDB",
+  "siteUrl": "https://vevdb.com",
+  "themeColor": "#f5f7f6",
+  "favicon": "/vev-mark.png",
+  "tagline": "An embedded Datalog database for immutable database values.",
+  "docsIntro": "Guides and reference documentation for using VevDB as a command-line database or embedded library.",
+  "sourceRepository": "https://github.com/vevdb/vev",
+  "sourceBranch": "main",
+  "licenseName": "Eclipse Public License 2.0",
+  "licenseUrl": "https://github.com/vevdb/vev/blob/main/LICENSE",
+  "groups": [
+    {
+      "title": "Start",
+      "items": [
+        {
+          "file": "getting-started.md",
+          "label": "Getting started",
+          "slug": "getting-started",
+          "description": "Open a database, transact data, and run a query."
+        },
+        {
+          "file": "cli.md",
+          "label": "Command-line interface",
+          "slug": "cli",
+          "description": "Create, transact, query, inspect, and compact stores."
+        },
+        {
+          "file": "building.md",
+          "label": "Building VevDB",
+          "slug": "building",
+          "description": "Build the CLI, shared library, and language packages."
+        }
+      ]
+    },
+    {
+      "title": "Core concepts",
+      "items": [
+        {
+          "file": "data-model.md",
+          "label": "Data model",
+          "slug": "data-model",
+          "description": "Datoms, entities, attributes, transactions, and snapshots."
+        },
+        {
+          "file": "transactions.md",
+          "label": "Transactions",
+          "slug": "transactions",
+          "description": "Transaction data, lookup refs, tempids, and functions."
+        },
+        {
+          "file": "query-model.md",
+          "label": "Queries and pull",
+          "slug": "query-model",
+          "description": "Datalog clauses, inputs, rules, aggregates, and pull."
+        },
+        {
+          "file": "history.md",
+          "label": "History",
+          "slug": "history",
+          "description": "Historical views, as-of, since, and transaction logs."
+        }
+      ]
+    },
+    {
+      "title": "Storage",
+      "items": [
+        {
+          "file": "storage.md",
+          "label": "Storage",
+          "slug": "storage",
+          "description": "Durable stores, snapshots, indexes, and compaction."
+        },
+        {
+          "file": "sqlite.md",
+          "label": "SQLite backend",
+          "slug": "sqlite",
+          "description": "The bundled durable storage backend."
+        },
+        {
+          "file": "runtime-dependencies.md",
+          "label": "Runtime dependencies",
+          "slug": "runtime-dependencies",
+          "description": "What applications need at runtime."
+        }
+      ]
+    },
+    {
+      "title": "Reference",
+      "items": [
+        {
+          "file": "datomic-syntax.md",
+          "label": "Datomic syntax",
+          "slug": "datomic-syntax",
+          "description": "Supported Datomic-style transaction and query syntax."
+        },
+        {
+          "file": "c-abi.md",
+          "label": "C ABI",
+          "slug": "c-abi",
+          "description": "Native embedding through the stable C interface."
+        },
+        {
+          "file": "interop.md",
+          "label": "Language packages",
+          "slug": "interop",
+          "description": "C, Clojure, Java, Odin, and other clients."
+        },
+        {
+          "file": "benchmarks.md",
+          "label": "Benchmarks",
+          "slug": "benchmarks",
+          "description": "Workloads and reproducible performance measurements."
+        },
+        {
+          "file": "musicbrainz.md",
+          "label": "MusicBrainz example",
+          "slug": "musicbrainz",
+          "description": "Importing and querying a larger real-world dataset."
+        }
+      ]
+    }
+  ]
+}
