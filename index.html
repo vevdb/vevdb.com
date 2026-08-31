@@ -35,25 +35,10 @@
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="/" aria-label="VevDB home">
-          <img src="/vev-mark.png" width="42" height="42" alt="">
-          <span>VevDB</span>
-        </a>
-        <nav aria-label="Main navigation">
-          <a href="https://github.com/vevdb/vev/blob/main/README.md">Overview</a>
-          <a href="https://github.com/vevdb/vev/tree/main/docs">Documentation</a>
-          <a href="https://github.com/vevdb/vev/releases">Releases</a>
-          <a href="https://github.com/vevdb/vev">Source</a>
-        </nav>
-      </div>
-    </header>
-
     <main id="main">
       <section class="introduction" aria-labelledby="intro-title">
         <div class="title-block">
-          <img src="/vev-mark.png" width="112" height="112" alt="The VevDB logo">
+          <span class="vev-icon-crop" aria-hidden="true"><img src="/vevdb.png" alt=""></span>
           <div>
             <h1 id="intro-title">VevDB</h1>
             <p>An embedded Datalog database for immutable database values.</p>
@@ -195,8 +180,41 @@
     </main>
 
     <footer>
-      <p>VevDB is open source under the <a href="https://github.com/vevdb/vev/blob/main/LICENSE">Eclipse Public License 2.0</a>.</p>
-      <p>Website source: <a href="https://github.com/vevdb/vevdb.com">GitHub</a></p>
+      <div class="footer-intro">
+        <strong>VevDB</strong>
+        <p>An embedded Datalog database for immutable database values.</p>
+      </div>
+      <div class="footer-group">
+        <h2>Documentation</h2>
+        <ul>
+          <li><a href="https://github.com/vevdb/vev/blob/main/docs/getting-started.md">Getting started</a></li>
+          <li><a href="https://github.com/vevdb/vev/blob/main/docs/data-model.md">Data model</a></li>
+          <li><a href="https://github.com/vevdb/vev/blob/main/docs/query-model.md">Queries and pull</a></li>
+          <li><a href="https://github.com/vevdb/vev/blob/main/docs/c-abi.md">C API</a></li>
+        </ul>
+      </div>
+      <div class="footer-group">
+        <h2>Project</h2>
+        <ul>
+          <li><a href="https://github.com/vevdb/vev/blob/main/README.md">Overview</a></li>
+          <li><a href="https://github.com/vevdb/vev/releases">Releases</a></li>
+          <li><a href="https://github.com/vevdb/vev">Source code</a></li>
+          <li><a href="https://github.com/vevdb/vev/issues">Issues</a></li>
+        </ul>
+      </div>
+      <div class="footer-group">
+        <h2>Packages</h2>
+        <ul>
+          <li><a href="https://github.com/vevdb/vev-clj">Clojure</a></li>
+          <li><a href="https://github.com/vevdb/vev-java">Java</a></li>
+          <li><a href="https://github.com/vevdb/vev-odin">Odin</a></li>
+          <li><a href="https://github.com/vevdb/vev/blob/main/docs/interop.md">All packages</a></li>
+        </ul>
+      </div>
+      <div class="footer-meta">
+        <span>Open source under the <a href="https://github.com/vevdb/vev/blob/main/LICENSE">Eclipse Public License 2.0</a>.</span>
+        <span>Website source: <a href="https://github.com/vevdb/vevdb.com">GitHub</a></span>
+      </div>
     </footer>
   </body>
 </html>
