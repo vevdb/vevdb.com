@@ -8,7 +8,7 @@
   "sourceRepository": "https://github.com/vevdb/vev",
   "sourceBranch": "main",
   "licenseName": "Eclipse Public License 2.0",
-  "licenseUrl": "https://github.com/vevdb/vev/blob/main/LICENSE",
+  "licenseUrl": "https://www.eclipse.org/legal/epl-2.0/",
   "groups": [
     {
       "title": "Start",
