@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>VevDB — An embedded Datalog database</title>
     <meta name="description" content="VevDB is a native, embedded Datalog database built around immutable database values, with in-memory and durable storage and APIs for C, Clojure, and more.">
-    <meta name="theme-color" content="#f7f7f4">
+    <meta name="theme-color" content="#f5f7f6">
     <link rel="canonical" href="https://vevdb.com/">
-    <link rel="icon" href="/vevdb.png" type="image/png">
+    <link rel="icon" href="/vev-mark.png" type="image/png">
     <link rel="stylesheet" href="/style.css">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="VevDB">
     <meta property="og:title" content="VevDB — An embedded Datalog database">
-    <meta property="og:description" content="Immutable database values, declarative queries, and durable storage in one native library.">
+    <meta property="og:description" content="A native, embedded Datalog database built around immutable database values.">
     <meta property="og:url" content="https://vevdb.com/">
     <meta property="og:image" content="https://vevdb.com/vevdb.png">
     <meta property="og:image:alt" content="The VevDB logo">
@@ -36,102 +36,167 @@
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header">
-      <a class="brand" href="/" aria-label="VevDB home">
-        <img src="/vev-mark.png" width="40" height="40" alt="">
-        <span>VevDB</span>
-      </a>
-      <nav aria-label="Main navigation">
-        <a href="https://github.com/vevdb/vev/blob/main/README.md">About</a>
-        <a href="https://github.com/vevdb/vev/tree/main/docs">Docs</a>
-        <a href="https://github.com/vevdb/vev">GitHub</a>
-      </nav>
+      <div class="header-inner">
+        <a class="brand" href="/" aria-label="VevDB home">
+          <img src="/vev-mark.png" width="42" height="42" alt="">
+          <span>VevDB</span>
+        </a>
+        <nav aria-label="Main navigation">
+          <a href="https://github.com/vevdb/vev/blob/main/README.md">Overview</a>
+          <a href="https://github.com/vevdb/vev/tree/main/docs">Documentation</a>
+          <a href="https://github.com/vevdb/vev/releases">Releases</a>
+          <a href="https://github.com/vevdb/vev">Source</a>
+        </nav>
+      </div>
     </header>
 
     <main id="main">
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <p class="eyebrow">Native &middot; Embedded &middot; Immutable</p>
-          <h1 id="hero-title">Facts, woven<br>to endure.</h1>
-          <p class="lede">
-            VevDB is an embedded Datalog database built around immutable
-            database values&mdash;with declarative queries, durable storage,
-            and no separate database server.
-          </p>
-          <div class="actions">
-            <a class="button primary" href="https://github.com/vevdb/vev">View on GitHub</a>
-            <a class="button secondary" href="https://github.com/vevdb/vev/blob/main/docs/getting-started.md">Get started <span aria-hidden="true">&rarr;</span></a>
+      <section class="introduction" aria-labelledby="intro-title">
+        <div class="title-block">
+          <img src="/vev-mark.png" width="112" height="112" alt="The VevDB logo">
+          <div>
+            <h1 id="intro-title">VevDB</h1>
+            <p>An embedded Datalog database for immutable database values.</p>
           </div>
         </div>
 
-        <div class="datoms" role="img" aria-label="Illustration of immutable facts">
-          <p class="datom-head"><span>entity</span><span>attribute</span><span>value</span></p>
-          <p><span>101</span><span>:person/name</span><span>&ldquo;Ada&rdquo;</span></p>
-          <p><span>101</span><span>:person/language</span><span>&ldquo;Analytical Engine&rdquo;</span></p>
-          <p><span>102</span><span>:person/name</span><span>&ldquo;Grace&rdquo;</span></p>
-          <p><span>102</span><span>:person/language</span><span>&ldquo;COBOL&rdquo;</span></p>
-          <div class="weave" aria-hidden="true"></div>
-        </div>
-      </section>
+        <div class="intro-grid">
+          <div class="intro-copy">
+            <p>
+              VevDB stores attributed facts and produces immutable database
+              snapshots through append-only transactions. Applications can
+              query those snapshots declaratively and pass them around as
+              ordinary values.
+            </p>
+            <p>
+              The database runs in-process, either in memory or durably with
+              bundled SQLite. It does not require a separate transactor process,
+              a Clojure runtime, or a database server.
+            </p>
+            <p>
+              VevDB follows Datomic&rsquo;s data model and supports Datalog
+              queries, pull expressions, entities, indexes, history, and
+              hypothetical databases.
+            </p>
+            <p class="inline-links">
+              <a href="https://github.com/vevdb/vev/blob/main/README.md">Project overview</a>
+              <span aria-hidden="true">&middot;</span>
+              <a href="https://github.com/vevdb/vev/releases">Releases</a>
+              <span aria-hidden="true">&middot;</span>
+              <a href="https://github.com/vevdb/vev">GitHub</a>
+            </p>
+          </div>
 
-      <section class="principles" aria-label="VevDB highlights">
-        <article>
-          <p class="number">01</p>
-          <h2>Embedded</h2>
-          <p>A lightweight native library that runs in your process, in memory or durably with bundled SQLite.</p>
-        </article>
-        <article>
-          <p class="number">02</p>
-          <h2>Immutable</h2>
-          <p>Transactions produce new database values. Existing snapshots remain valid and queryable.</p>
-        </article>
-        <article>
-          <p class="number">03</p>
-          <h2>Declarative</h2>
-          <p>Datalog queries, rules, pull expressions, entities, indexes, and historical views.</p>
-        </article>
-      </section>
+          <section class="code-example" aria-label="VevDB Clojure example">
+            <div class="code-label">Clojure</div>
+            <pre><code><span class="syntax-form">(require</span> '[vev.core :as d])
 
-      <section class="query" aria-labelledby="query-title">
-        <div>
-          <p class="eyebrow">Query data, not tables</p>
-          <h2 id="query-title">Ask for what you need.</h2>
-          <p>VevDB follows Datomic&rsquo;s data model and familiar API. Facts accumulate, database snapshots are ordinary values, and queries stay independent of storage layout.</p>
-        </div>
-        <section class="code-window" aria-label="VevDB Clojure example">
-          <div class="code-title"><span></span><span></span><span></span><b>Clojure</b></div>
-          <pre><code><span class="syntax-keyword">(require</span> '[vev.core :as d])
+<span class="syntax-form">(def</span> conn <span class="syntax-form">(d/create-conn</span>))
 
-<span class="syntax-keyword">(def</span> conn <span class="syntax-keyword">(d/create-conn</span>))
-
-<span class="syntax-keyword">(d/transact</span> conn
+<span class="syntax-form">(d/transact</span> conn
   [{:db/id 1 :person/name <span class="syntax-string">"Ada"</span>}
    {:db/id 2 :person/name <span class="syntax-string">"Grace"</span>}])
 
-<span class="syntax-keyword">(d/q</span> '[:find ?name
+<span class="syntax-form">(d/q</span> '[:find ?name
        :where [?e :person/name ?name]]
-     <span class="syntax-keyword">(d/db</span> conn))</code></pre>
-        </section>
+     <span class="syntax-form">(d/db</span> conn))</code></pre>
+          </section>
+        </div>
       </section>
 
-      <section class="links" aria-labelledby="explore-title">
-        <div>
-          <p class="eyebrow">Documentation</p>
-          <h2 id="explore-title">Start with the model.</h2>
-          <p>Then choose the API that fits your application.</p>
+      <section class="section" aria-labelledby="model-title">
+        <h2 id="model-title">Database model</h2>
+        <div class="topic-grid">
+          <article>
+            <h3>Datoms</h3>
+            <p>Each fact consists of an entity, attribute, value, transaction, and an indication of whether the fact was added or retracted.</p>
+          </article>
+          <article>
+            <h3>Immutable database values</h3>
+            <p>Transactions produce new database values. Existing snapshots remain valid and can be queried at any time.</p>
+          </article>
+          <article>
+            <h3>Datalog queries</h3>
+            <p>Queries support inputs, predicates, aggregates, rules, negation, disjunction, pull expressions, and historical views.</p>
+          </article>
+          <article>
+            <h3>In-memory and durable storage</h3>
+            <p>Use an in-memory connection for transient data or a durable store backed internally by bundled SQLite.</p>
+          </article>
+          <article>
+            <h3>Indexes and history</h3>
+            <p>EAVT, AEVT, AVET, and VAET indexes support entity access, reverse references, range scans, and historical queries.</p>
+          </article>
+          <article>
+            <h3>Embedded operation</h3>
+            <p>The query engine and storage layer run inside the application as a native library, without a separate server process.</p>
+          </article>
         </div>
-        <div class="link-list">
-          <a href="https://github.com/vevdb/vev/blob/main/docs/getting-started.md"><span>Getting started</span><span aria-hidden="true">&rarr;</span></a>
-          <a href="https://github.com/vevdb/vev/blob/main/docs/data-model.md"><span>Data model</span><span aria-hidden="true">&rarr;</span></a>
-          <a href="https://github.com/vevdb/vev/blob/main/docs/query-model.md"><span>Queries and pull</span><span aria-hidden="true">&rarr;</span></a>
-          <a href="https://github.com/vevdb/vev/blob/main/docs/interop.md"><span>Language packages</span><span aria-hidden="true">&rarr;</span></a>
-          <a href="https://github.com/vevdb/vev/blob/main/docs/c-abi.md"><span>C API</span><span aria-hidden="true">&rarr;</span></a>
+      </section>
+
+      <section class="section two-column-section" aria-labelledby="using-title">
+        <div>
+          <h2 id="using-title">Using VevDB</h2>
+          <p>The command-line interface reads and writes durable stores without a server. EDN transactions and queries can be supplied inline or in files.</p>
+          <p>For embedded use, start with the C API or one of the language packages.</p>
+          <p><a href="https://github.com/vevdb/vev/blob/main/docs/getting-started.md">Read the getting started guide</a></p>
+        </div>
+        <pre class="terminal"><code><span>$</span> vevdb transact example.db transactions.edn
+<span>$</span> vevdb query example.db query.edn</code></pre>
+      </section>
+
+      <section class="section api-section" aria-labelledby="api-title">
+        <h2 id="api-title">APIs</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Language</th><th>Status</th><th>Package or documentation</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>C</td><td>Built in</td><td><a href="https://github.com/vevdb/vev/blob/main/docs/c-abi.md">C ABI guide</a></td></tr>
+              <tr><td>Kvist</td><td>Built in</td><td><a href="https://github.com/vevdb/vev/tree/main/clients/kvist">Kvist API</a></td></tr>
+              <tr><td>Clojure</td><td>Available</td><td><a href="https://github.com/vevdb/vev-clj">vevdb/vev-clj</a></td></tr>
+              <tr><td>Java</td><td>Available</td><td><a href="https://github.com/vevdb/vev-java">vevdb/vev-java</a></td></tr>
+              <tr><td>Odin</td><td>Available</td><td><a href="https://github.com/vevdb/vev-odin">vevdb/vev-odin</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section docs-section" aria-labelledby="docs-title">
+        <h2 id="docs-title">Documentation</h2>
+        <div class="docs-grid">
+          <a href="https://github.com/vevdb/vev/blob/main/docs/getting-started.md">
+            <strong>Getting started</strong>
+            <span>Open a database, transact data, and run a query.</span>
+          </a>
+          <a href="https://github.com/vevdb/vev/blob/main/docs/data-model.md">
+            <strong>Data model</strong>
+            <span>Datoms, entities, attributes, transactions, and snapshots.</span>
+          </a>
+          <a href="https://github.com/vevdb/vev/blob/main/docs/query-model.md">
+            <strong>Queries and pull</strong>
+            <span>Datalog clauses, inputs, rules, aggregates, and pull patterns.</span>
+          </a>
+          <a href="https://github.com/vevdb/vev/blob/main/docs/history.md">
+            <strong>History</strong>
+            <span>Historical views, as-of, since, and transaction logs.</span>
+          </a>
+          <a href="https://github.com/vevdb/vev/blob/main/docs/storage.md">
+            <strong>Storage</strong>
+            <span>Durable stores, snapshots, indexes, and compaction.</span>
+          </a>
+          <a href="https://github.com/vevdb/vev/blob/main/docs/interop.md">
+            <strong>Language packages</strong>
+            <span>C, Clojure, Java, Odin, and experimental clients.</span>
+          </a>
         </div>
       </section>
     </main>
 
     <footer>
-      <p>VevDB is open source under the Eclipse Public License 2.0.</p>
-      <a href="https://github.com/vevdb/vev">Source and documentation</a>
+      <p>VevDB is open source under the <a href="https://github.com/vevdb/vev/blob/main/LICENSE">Eclipse Public License 2.0</a>.</p>
+      <p>Website source: <a href="https://github.com/vevdb/vevdb.com">GitHub</a></p>
     </footer>
   </body>
 </html>
