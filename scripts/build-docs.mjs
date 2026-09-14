@@ -120,6 +120,8 @@ function pageTemplate(config, page) {
     '    <link rel="icon" href="' + escapeHtml(config.favicon) + '">',
     '    <link rel="canonical" href="' + escapeHtml(canonical) + '">',
     '    <link rel="stylesheet" href="/docs.css">',
+    '    <script src="/analytics-config.js"></script>',
+    '    <script src="/analytics.js"></script>',
     '    <meta property="og:type" content="article">',
     '    <meta property="og:site_name" content="' + escapeHtml(config.siteName) + '">',
     '    <meta property="og:title" content="' + escapeHtml(title) + '">',

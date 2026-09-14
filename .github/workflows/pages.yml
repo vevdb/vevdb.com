@@ -42,14 +42,21 @@ jobs:
       - name: Install documentation builder
         run: npm ci
 
+      - name: Test website tooling
+        run: npm test
+
       - name: Assemble static site
         run: |
           mkdir -p _site
-          cp CNAME docs.css index.html robots.txt style.css vev-mark.png vevdb.png _site/
+          cp CNAME analytics-config.js analytics.js docs.css index.html robots.txt style.css vev-mark.png vevdb.png _site/
+          node scripts/build-analytics-config.mjs --output _site/analytics-config.js
           node scripts/build-docs.mjs \
             --source _content/vev/docs \
             --output _site \
             --config docs.config.json
+        env:
+          POSTHOG_PROJECT_KEY: ${{ vars.POSTHOG_PROJECT_KEY }}
+          POSTHOG_API_HOST: ${{ vars.POSTHOG_API_HOST }}
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
