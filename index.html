@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VevDB — An embedded Datalog database</title>
-    <meta name="description" content="VevDB is a native, embedded Datalog database built around immutable database values, with in-memory and durable storage and APIs for C, Clojure, and more.">
-    <meta name="theme-color" content="#f5f7f6">
+    <title>VevDB — Query current, historical, and hypothetical state</title>
+    <meta name="description" content="VevDB is a small native embedded database with immutable database values, Datalog, queryable history, and hypothetical transactions—without a JVM or database server.">
+    <meta name="theme-color" content="#f2f5f3">
     <link rel="canonical" href="https://vevdb.com/">
     <link rel="icon" href="/vev-mark.png" type="image/png">
     <link rel="stylesheet" href="/style.css">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="VevDB">
-    <meta property="og:title" content="VevDB — An embedded Datalog database">
-    <meta property="og:description" content="A native, embedded Datalog database built around immutable database values.">
+    <meta property="og:title" content="VevDB — Query current, historical, and hypothetical state">
+    <meta property="og:description" content="A small native embedded database for current state, queryable history, and hypothetical transactions.">
     <meta property="og:url" content="https://vevdb.com/">
     <meta property="og:image" content="https://vevdb.com/vevdb.png">
     <meta property="og:image:alt" content="The VevDB logo">
@@ -24,10 +24,10 @@
         "@context": "https://schema.org",
         "@type": "SoftwareSourceCode",
         "name": "VevDB",
-        "description": "A native, embedded Datalog database built around immutable database values.",
+        "description": "A small native embedded database with immutable database values, Datalog, queryable history, and hypothetical transactions.",
         "url": "https://vevdb.com/",
         "codeRepository": "https://github.com/vevdb/vev",
-        "programmingLanguage": ["Kvist", "C", "Clojure"],
+        "programmingLanguage": ["C", "Kvist", "Clojure", "Java", "Odin"],
         "license": "https://www.eclipse.org/legal/epl-2.0/"
       }
     </script>
@@ -35,99 +35,274 @@
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
 
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="VevDB home">
+        <span class="brand-logo"><img src="/vevdb.png" alt="VevDB"></span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#model">Why VevDB</a>
+        <a href="#native">Native footprint</a>
+        <a href="#apis">APIs</a>
+        <a href="/docs/">Docs</a>
+      </nav>
+      <a class="header-source" href="https://github.com/vevdb/vev">GitHub</a>
+    </header>
+
     <main id="main">
-      <section class="introduction" aria-labelledby="intro-title">
-        <div class="title-block">
-          <span class="vev-icon-crop" aria-hidden="true"><img src="/vevdb.png" alt=""></span>
-          <div>
-            <h1 id="intro-title">VevDB</h1>
-            <p>An embedded Datalog database for immutable database values.</p>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">Query what is, what was, and what could be.</h1>
+          <p class="hero-lede">
+            VevDB is a native embedded database with immutable database values,
+            Datalog, queryable history, and hypothetical transactions&mdash;without
+            a JVM or database server.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="/docs/getting-started/">Get started</a>
+            <a class="button secondary" href="https://github.com/vevdb/vev/releases/latest">Download</a>
           </div>
+          <ul class="deployment-facts">
+            <li>Runs in-process</li>
+            <li>No JVM</li>
+            <li>No server</li>
+            <li>macOS, Linux, Windows</li>
+          </ul>
         </div>
 
-        <div class="intro-grid">
-          <div class="intro-copy">
-            <p>
-              VevDB stores attributed facts and produces immutable database
-              snapshots through append-only transactions. Applications can
-              query those snapshots declaratively and pass them around as
-              ordinary values.
-            </p>
-            <p>
-              The database runs in-process, either in memory or durably with
-              bundled SQLite. It does not require a separate transactor process,
-              a Clojure runtime, or a database server.
-            </p>
-            <p>
-              VevDB follows Datomic&rsquo;s data model and supports Datalog
-              queries, pull expressions, entities, indexes, history, and
-              hypothetical databases.
-            </p>
-            <p class="inline-links">
-              <a href="https://github.com/vevdb/vev">GitHub</a>
-            </p>
-          </div>
+        <figure class="code-example hero-model">
+          <figcaption>
+            <span>Pseudocode</span>
+            <span>Database as a value</span>
+          </figcaption>
+          <pre><code>current = <span class="syntax-call">database</span>(connection)
+<span class="syntax-comment">// "current" is an immutable database value</span>
 
-          <section class="code-example" aria-label="VevDB Clojure example">
-            <div class="code-label">Clojure</div>
-            <pre><code><span class="syntax-form">(require</span> '[vev.core :as d])
+proposed = <span class="syntax-call">with</span>(current,
+  set task[42].status = <span class="syntax-string">approved</span>
+)
+<span class="syntax-comment">// "proposed" is another database value</span>
 
-<span class="syntax-form">(def</span> conn <span class="syntax-form">(d/create-conn</span>))
+<span class="syntax-call">query</span>(current, task[42].status)  <span class="syntax-comment">// pending</span>
+<span class="syntax-call">query</span>(proposed, task[42].status) <span class="syntax-comment">// approved</span>
 
-<span class="syntax-form">(d/transact</span> conn
-  [{:db/id 1 :person/name <span class="syntax-string">"Ada"</span>}
-   {:db/id 2 :person/name <span class="syntax-string">"Grace"</span>}])
+<span class="syntax-comment">// No write was performed.</span>
+<span class="syntax-comment">// The connection still holds the original value.</span>
+<span class="syntax-call">query</span>(
+  <span class="syntax-call">database</span>(connection),
+  task[42].status
+) <span class="syntax-comment">// pending</span></code></pre>
+        </figure>
+      </section>
 
-<span class="syntax-form">(d/q</span> '[:find ?name
-       :where [?e :person/name ?name]]
-     <span class="syntax-form">(d/db</span> conn))</code></pre>
-          </section>
+      <section id="model" class="section model-section" aria-labelledby="model-title">
+        <div class="section-heading">
+          <h2 id="model-title">One useful capability can open up the whole model</h2>
+          <p>You do not need to arrive wanting a new database paradigm. Start with history, a proposed change, or connected application data.</p>
+        </div>
+        <div class="state-grid problem-grid">
+          <article>
+            <span class="state-number">History / audit</span>
+            <h3>What did the application know then?</h3>
+            <p>Query an earlier point in time or inspect the complete history without maintaining a separate audit representation.</p>
+            <a href="/docs/history/">Explore queryable history</a>
+          </article>
+          <article>
+            <span class="state-number">What-if / planning</span>
+            <h3>What would be true after this change?</h3>
+            <p>Apply facts to an immutable database value, run queries or rules against the result, then keep it or discard it.</p>
+            <a href="/docs/transactions/">Explore hypothetical state</a>
+          </article>
+          <article>
+            <span class="state-number">Connected state</span>
+            <h3>How is this application data related?</h3>
+            <p>Query graph-like relationships with Datalog instead of accumulating one-off joins and traversal code.</p>
+            <a href="/docs/query-model/">Explore Datalog queries</a>
+          </article>
         </div>
       </section>
 
-      <section class="section" aria-labelledby="model-title">
-        <h2 id="model-title">Database model</h2>
-        <div class="topic-grid">
+      <section class="section value-section" aria-labelledby="values-title">
+        <div class="value-copy">
+          <h2 id="values-title">The database becomes an argument.</h2>
+          <p>
+            Capture an immutable database value and pass the whole database into
+            ordinary application functions. Each function sees one stable world,
+            can query it freely, and returns data instead of performing I/O.
+          </p>
+          <p>
+            This makes a functional core and imperative shell a natural fit:
+            decision logic receives <code>db</code> and a command; the shell owns
+            the connection, transactions, and external effects.
+          </p>
+          <ul class="value-benefits">
+            <li>The same function can receive current, historical, or hypothetical state.</li>
+            <li>Tests pass in a database value without giving the core a live connection.</li>
+            <li>Long-running work can keep a stable snapshot while new transactions arrive.</li>
+          </ul>
+        </div>
+        <figure class="code-example functional-code">
+          <figcaption>
+            <span>Pseudocode</span>
+            <span>Functional core / imperative shell</span>
+          </figcaption>
+          <pre><code><span class="syntax-comment">// Pure function: values in, values out</span>
+function <span class="syntax-call">decide</span>(db, command):
+  allowed = <span class="syntax-call">query</span>(db, rules_for(command))
+  if not allowed:
+    return rejection
+
+  facts = facts_for(command)
+  next_db = <span class="syntax-call">with</span>(db, facts)
+  effects = <span class="syntax-call">query</span>(next_db, effects_to_emit)
+  return { facts, effects }
+
+<span class="syntax-comment">// Imperative shell: I/O stays at the boundary</span>
+db = <span class="syntax-call">database</span>(connection)
+result = <span class="syntax-call">decide</span>(db, command)
+
+<span class="syntax-call">transact</span>(connection, result.facts)
+<span class="syntax-call">send</span>(result.effects)</code></pre>
+          <p>Pass <code>decide</code> a current value, an earlier value, or a proposed value. The function itself does not change.</p>
+        </figure>
+      </section>
+
+      <section id="native" class="section native-section" aria-labelledby="native-title">
+        <div class="native-copy">
+          <h2 id="native-title">A component you can ship with the application</h2>
+          <p>
+            Link VevDB into native software and open an in-memory or durable
+            store. There is no transactor service to operate and no managed
+            runtime to bundle or warm up.
+          </p>
+          <p>
+            VevDB focuses on the embedded data model instead of growing into a
+            database platform. That makes it a natural fit for self-contained
+            desktop tools, developer products, on-premises applications, and
+            resource-constrained single-node services.
+          </p>
+        </div>
+        <p class="footprint-size">
+          <strong>3&ndash;4 MB</strong>
+          <span>native SDK downloads in <a href="https://github.com/vevdb/vev/releases/tag/v0.3.0">v0.3.0</a></span>
+        </p>
+      </section>
+
+      <section class="section native-api-section" aria-labelledby="native-api-title">
+        <div class="native-api-copy">
+          <h2 id="native-api-title">Embed it through a stable C ABI.</h2>
+          <p>
+            Embed VevDB directly through its stable C ABI or use a language
+            package built on top. The database, query engine, and durable
+            storage all run inside the application process.
+          </p>
+          <p><a href="/docs/c-abi/">Read the C ABI guide</a></p>
+        </div>
+        <figure class="code-example native-code">
+          <figcaption>
+            <span>C</span>
+            <span>A complete in-process round trip</span>
+          </figcaption>
+          <pre><code><span class="syntax-type">vev_conn_t</span> conn = <span class="syntax-call">vev_conn_open_memory</span>();
+
+<span class="syntax-type">const char</span> *report = <span class="syntax-call">vev_transact_edn</span>(
+  conn,
+  <span class="syntax-string">"[{:db/id 1 :project/name \"Atlas\"}]"</span>
+);
+<span class="syntax-call">vev_string_free</span>(report);
+
+<span class="syntax-type">vev_value_handle_t</span> rows = <span class="syntax-call">vev_query_value</span>(
+  conn,
+  <span class="syntax-string">"[:find ?name :where "</span>
+  <span class="syntax-string">"[?e :project/name ?name]]"</span>
+);
+<span class="syntax-call">puts</span>(<span class="syntax-call">vev_value_handle_edn</span>(rows)); <span class="syntax-comment">// #{["Atlas"]}</span>
+
+<span class="syntax-call">vev_value_handle_free</span>(rows);
+<span class="syntax-call">vev_conn_close</span>(conn);</code></pre>
+        </figure>
+      </section>
+
+      <aside class="datomic-callout" aria-labelledby="datomic-title">
+        <div class="datomic-callout-inner">
+          <h2 id="datomic-title">The model should feel familiar.</h2>
+          <div class="datomic-copy">
+            <p>
+              Know Datomic? VevDB follows the same style of semantics: datoms,
+              immutable database values, Datalog, pull, entities, indexes,
+              history, <code>as-of</code>, and <code>db-with</code>&mdash;packaged as
+              a small in-process native library.
+            </p>
+            <a href="/docs/datomic-syntax/">See the syntax guide</a>
+          </div>
+        </div>
+      </aside>
+
+      <section class="section sqlite-section" aria-labelledby="sqlite-title">
+        <div class="section-heading narrow-heading">
+          <h2 id="sqlite-title">Not everything belongs in history.</h2>
+          <p>VevDB also exposes the SQLite bundled into its native library, so an application can use both storage models without shipping another database dependency.</p>
+        </div>
+        <div class="storage-grid">
           <article>
-            <h3>Datoms</h3>
-            <p>Each fact consists of an entity, attribute, value, transaction, and an indication of whether the fact was added or retracted.</p>
+            <p class="storage-label">VevDB</p>
+            <h3>Durable domain facts</h3>
+            <p>Relationships, history, audit, business state, and data you want to query as immutable values.</p>
+            <ul>
+              <li>Datalog and pull</li>
+              <li>Queryable history</li>
+              <li>Hypothetical transactions</li>
+            </ul>
           </article>
           <article>
-            <h3>Immutable database values</h3>
-            <p>Transactions produce new database values. Existing snapshots remain valid and can be queried at any time.</p>
+            <p class="storage-label">Bundled SQLite API</p>
+            <h3>Operational and derived state</h3>
+            <p>Caches, sessions, jobs, email queues, search indexes, and other data that should be updated in place.</p>
+            <ul>
+              <li>Ordinary SQL</li>
+              <li>FTS5 included</li>
+              <li>No additional native library</li>
+            </ul>
           </article>
+        </div>
+        <p class="storage-note">The two stores use separate database files. Transactions do not span both stores. <a href="/docs/sqlite/">Read the SQLite API guide</a>.</p>
+      </section>
+
+      <section class="section capabilities-section" aria-labelledby="capabilities-title">
+        <div class="section-heading">
+          <h2 id="capabilities-title">The pieces for rich application state</h2>
+        </div>
+        <div class="capability-grid">
           <article>
             <h3>Datalog queries</h3>
-            <p>Queries support inputs, predicates, aggregates, rules, negation, disjunction, pull expressions, and historical views.</p>
+            <p>Query relationships with joins, rules, predicates, aggregates, negation, disjunction, and pull expressions.</p>
           </article>
           <article>
-            <h3>In-memory and durable storage</h3>
-            <p>Use an in-memory connection for transient data or a durable store backed internally by bundled SQLite.</p>
+            <h3>Immutable snapshots</h3>
+            <p>Hold and query stable database values while the connection continues accepting transactions.</p>
           </article>
           <article>
-            <h3>Indexes and history</h3>
-            <p>EAVT, AEVT, AVET, and VAET indexes support entity access, reverse references, range scans, and historical queries.</p>
+            <h3>History and time</h3>
+            <p>Use historical views, <code>as-of</code>, <code>since</code>, and transaction-range reads.</p>
           </article>
           <article>
-            <h3>Embedded operation</h3>
-            <p>The query engine and storage layer run inside the application as a native library, without a separate server process.</p>
+            <h3>Memory or disk</h3>
+            <p>Open transient in-memory databases or durable stores backed internally by bundled SQLite.</p>
+          </article>
+          <article>
+            <h3>Entity and index access</h3>
+            <p>Use entities, lookup refs, pull, reverse references, range scans, and EAVT/AEVT/AVET/VAET indexes.</p>
+          </article>
+          <article>
+            <h3>Native embedding</h3>
+            <p>Use the stable C ABI directly or through a language package. The query engine and storage run in-process.</p>
           </article>
         </div>
       </section>
 
-      <section class="section two-column-section" aria-labelledby="using-title">
-        <div>
-          <h2 id="using-title">Using VevDB</h2>
-          <p>The command-line interface reads and writes durable stores without a server. EDN transactions and queries can be supplied inline or in files.</p>
-          <p>For embedded use, start with the C API or one of the language packages.</p>
-          <p><a href="/docs/getting-started/">Read the getting started guide</a></p>
+      <section id="apis" class="section api-section" aria-labelledby="api-title">
+        <div class="section-heading">
+          <h2 id="api-title">APIs</h2>
         </div>
-        <pre class="terminal"><code><span>$</span> vevdb transact example.db transactions.edn
-<span>$</span> vevdb query example.db query.edn</code></pre>
-      </section>
-
-      <section class="section api-section" aria-labelledby="api-title">
-        <h2 id="api-title">APIs</h2>
         <div class="table-wrap">
           <table>
             <thead>
@@ -144,8 +319,39 @@
         </div>
       </section>
 
+      <section class="section start-section" aria-labelledby="start-title">
+        <div>
+          <h2 id="start-title">Open a store. Transact facts. Query a value.</h2>
+          <p>Start with the native SDK, the command-line interface, or a language package. VevDB is open source under EPL-2.0.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="/docs/getting-started/">Read the getting started guide</a>
+            <a class="button secondary" href="https://github.com/vevdb/vev">View source</a>
+          </div>
+        </div>
+        <pre class="terminal"><code><span>$</span> vevdb transact example.db transactions.edn
+<span>$</span> vevdb query example.db query.edn</code></pre>
+      </section>
+
+      <section class="evaluation-section" aria-labelledby="evaluation-title">
+        <div>
+          <h2 id="evaluation-title">Tell us what you are building.</h2>
+        </div>
+        <div class="evaluation-copy">
+          <p>
+            We would love to hear about projects where VevDB might be useful,
+            whether you are actively evaluating it or simply exploring the
+            model. Tell us what you are building and where it needs to run.
+          </p>
+          <div class="evaluation-actions">
+            <a class="button evaluation-button" href="mailto:hello@vevdb.com?subject=Considering%20VevDB%20for%20a%20product&amp;body=What%20are%20you%20building%3F%0A%0AWhich%20capabilities%20do%20you%20need%20%28history%2C%20hypothetical%20state%2C%20Datalog%2C%20native%20footprint%2C%20or%20something%20else%29%3F%0A%0AWhich%20platform%20and%20language%20are%20you%20using%3F%0A%0AWhich%20integration%20requirements%20matter%20most%3F">Email hello@vevdb.com</a>
+            <a class="button evaluation-secondary" href="https://github.com/vevdb/vev/issues/new?title=Evaluating%20VevDB%20for%20%5Bproduct%5D&amp;body=What%20are%20you%20building%3F%0A%0AWhich%20capabilities%20do%20you%20need%20%28history%2C%20hypothetical%20state%2C%20Datalog%2C%20native%20footprint%2C%20or%20something%20else%29%3F%0A%0AWhich%20platform%20and%20language%20are%20you%20using%3F%0A%0AWhich%20integration%20requirements%20matter%20most%3F">Open a public GitHub issue</a>
+          </div>
+          <small>Email is private. The GitHub alternative opens a pre-filled public issue.</small>
+        </div>
+      </section>
+
       <section class="section docs-section" aria-labelledby="docs-title">
-        <h2 id="docs-title">Documentation</h2>
+        <h2 id="docs-title">Go deeper</h2>
         <div class="docs-grid">
           <a href="/docs/getting-started/">
             <strong>Getting started</strong>
@@ -163,14 +369,6 @@
             <strong>History</strong>
             <span>Historical views, as-of, since, and transaction logs.</span>
           </a>
-          <a href="/docs/storage/">
-            <strong>Storage</strong>
-            <span>Durable stores, snapshots, indexes, and compaction.</span>
-          </a>
-          <a href="/docs/interop/">
-            <strong>Language packages</strong>
-            <span>C, Clojure, Java, Odin, and experimental clients.</span>
-          </a>
         </div>
       </section>
     </main>
@@ -178,7 +376,7 @@
     <footer>
       <div class="footer-intro">
         <strong>VevDB</strong>
-        <p>An embedded Datalog database for immutable database values.</p>
+        <p>Query what is, what was, and what could be.</p>
       </div>
       <div class="footer-group">
         <h2>Documentation</h2>
@@ -193,6 +391,8 @@
         <h2>Project</h2>
         <ul>
           <li><a href="https://github.com/vevdb/vev">Source code</a></li>
+          <li><a href="https://github.com/vevdb/vev/releases">Releases</a></li>
+          <li><a href="https://github.com/vevdb/vev/issues">Issues</a></li>
         </ul>
       </div>
       <div class="footer-group">

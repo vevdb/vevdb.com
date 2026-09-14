@@ -1,7 +1,7 @@
 # vevdb.com
 
-The website for [VevDB](https://github.com/vevdb/vev), a native, embedded
-Datalog database built around immutable database values.
+The website for [VevDB](https://github.com/vevdb/vev), a small native embedded
+database for current state, queryable history, and hypothetical transactions.
 
 The site is plain HTML and CSS and is published with GitHub Pages. The
 documentation is generated as static HTML from the Markdown files in the main
