@@ -180,9 +180,15 @@ result = <span class="syntax-call">decide</span>(db, command)
         <div class="native-copy">
           <h2 id="native-title">A component you can ship with the application</h2>
           <p>
-            Link VevDB into native software and open an in-memory or durable
-            store. The database engine runs inside the application as a small
-            native library.
+            Embed VevDB in an application and open an in-memory or durable store.
+            The database engine runs inside the application as a small native
+            library.
+          </p>
+          <p>
+            VevDB fits applications where SQLite would be the natural choice for
+            simple deployment, but the domain benefits from immutable database
+            values, Datalog, queryable history, or hypothetical transactions.
+            Use it from native software or through the Clojure and Java packages.
           </p>
           <p>
             VevDB focuses on the embedded data model instead of growing into a
