@@ -11,7 +11,7 @@
   "licenseUrl": "https://www.eclipse.org/legal/epl-2.0/",
   "staticRoutes": [
     "/articles/",
-    "/articles/the-database-becomes-an-argument/"
+    "/articles/the-database-as-a-value/"
   ],
   "groups": [
     {

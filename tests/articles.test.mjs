@@ -7,20 +7,20 @@ const repositoryRoot = path.resolve(import.meta.dirname, '..');
 const homepage = fs.readFileSync(path.join(repositoryRoot, 'index.html'), 'utf8');
 const articleIndex = fs.readFileSync(path.join(repositoryRoot, 'articles/index.html'), 'utf8');
 const article = fs.readFileSync(
-  path.join(repositoryRoot, 'articles/the-database-becomes-an-argument/index.html'),
+  path.join(repositoryRoot, 'articles/the-database-as-a-value/index.html'),
   'utf8'
 );
 const docsConfig = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'docs.config.json'), 'utf8'));
 const workflow = fs.readFileSync(path.join(repositoryRoot, '.github/workflows/pages.yml'), 'utf8');
 
 test('homepage and article index link to the database-value article', () => {
-  const route = '/articles/the-database-becomes-an-argument/';
+  const route = '/articles/the-database-as-a-value/';
   assert.match(homepage, new RegExp(route));
   assert.match(articleIndex, new RegExp(route));
 });
 
 test('article has canonical, sharing, structured data, and analytics metadata', () => {
-  assert.match(article, /<link rel="canonical" href="https:\/\/vevdb\.com\/articles\/the-database-becomes-an-argument\/">/);
+  assert.match(article, /<link rel="canonical" href="https:\/\/vevdb\.com\/articles\/the-database-as-a-value\/">/);
   assert.match(article, /<meta property="og:type" content="article">/);
   assert.match(article, /"@type": "TechArticle"/);
   assert.match(article, /<script src="\/analytics-config\.js"><\/script>/);
@@ -33,7 +33,7 @@ test('article has canonical, sharing, structured data, and analytics metadata', 
 test('article routes and assets are included in the deployed site', () => {
   assert.deepEqual(docsConfig.staticRoutes, [
     '/articles/',
-    '/articles/the-database-becomes-an-argument/'
+    '/articles/the-database-as-a-value/'
   ]);
   assert.match(workflow, /cp -R articles _site\//);
   assert.match(workflow, /article\.css/);
