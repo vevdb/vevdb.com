@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The database becomes an argument — VevDB</title>
+    <meta name="description" content="How immutable database values let ordinary functions query current, historical, or hypothetical application state.">
+    <meta name="author" content="Andreas Flakstad">
+    <meta name="theme-color" content="#f2f5f3">
+    <link rel="canonical" href="https://vevdb.com/articles/the-database-becomes-an-argument/">
+    <link rel="icon" href="/vev-mark.png" type="image/png">
+    <link rel="stylesheet" href="/article.css">
+    <script src="/analytics-config.js"></script>
+    <script src="/analytics.js"></script>
+
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="VevDB">
+    <meta property="og:title" content="The database becomes an argument">
+    <meta property="og:description" content="Pass an immutable database value to ordinary functions—and run the same logic against current, historical, or hypothetical state.">
+    <meta property="og:url" content="https://vevdb.com/articles/the-database-becomes-an-argument/">
+    <meta property="og:image" content="https://vevdb.com/vevdb.png">
+    <meta property="og:image:alt" content="The VevDB logo">
+    <meta property="article:published_time" content="2026-09-15">
+    <meta property="article:author" content="Andreas Flakstad">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "The database becomes an argument",
+        "description": "How immutable database values let ordinary functions query current, historical, or hypothetical application state.",
+        "datePublished": "2026-09-15",
+        "dateModified": "2026-09-15",
+        "author": {
+          "@type": "Person",
+          "name": "Andreas Flakstad"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "VevDB",
+          "url": "https://vevdb.com/"
+        },
+        "image": "https://vevdb.com/vevdb.png",
+        "mainEntityOfPage": "https://vevdb.com/articles/the-database-becomes-an-argument/"
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="article-header">
+      <a class="brand" href="/" aria-label="VevDB home">
+        <span class="brand-logo"><img src="/vevdb.png" alt="VevDB"></span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="/articles/">Articles</a>
+        <a href="/docs/">Docs</a>
+        <a href="https://github.com/vevdb/vev">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="main" class="article-shell">
+      <article>
+        <header>
+          <h1 class="article-title">The database becomes an argument.</h1>
+          <p class="article-lede">An immutable database value changes where application logic can live. The same function can reason about what is true now, what was true before, or what would be true after a proposed change.</p>
+          <div class="article-meta">
+            <span>Andreas Flakstad</span>
+            <span><time datetime="2026-09-15">September 15, 2026</time></span>
+            <span>6 minute read</span>
+          </div>
+        </header>
+
+        <div class="article-body">
+          <p>Most application code does not receive a database. It receives an ID, a repository, or a connection, and reaches out to storage whenever it needs another fact. That is a practical default. It is also a hidden dependency on one particular world: whatever happens to be in the database at the moment the query runs.</p>
+
+          <p>The limitation becomes visible when the application needs to ask a different question. Would this release be valid if we approved these tasks? What did the system know when it made yesterday’s decision? Can we show a preview without first writing temporary state?</p>
+
+          <p>Those questions are often answered with separate mechanisms: staging tables, copied objects, audit records, event replay, test doubles, or validation code that operates on a second representation of the domain. Each mechanism can work. The complexity comes from keeping all of them consistent with the current database and with each other.</p>
+
+          <p>There is another programming model: make the database itself an immutable value.</p>
+
+          <h2>One function, several possible worlds</h2>
+
+          <p>Imagine a release-planning application. Before a release can be published, it must check dependencies, approvals, unresolved risks, and policy rules. The decision can be expressed as an ordinary function whose first argument is a database value:</p>
+
+          <pre class="code-block"><code><span class="code-comment">// Pseudocode. Values in, values out.</span>
+function evaluateRelease(db, releaseId):
+  blockers = query(db,
+    all blockers for releaseId)
+
+  effects = query(db,
+    notifications required for releaseId)
+
+  return { blockers, effects }</code></pre>
+
+          <p>The function does not open a connection and does not know whether its input represents production, a test fixture, last Tuesday, or a future that may never be committed. It simply asks questions of one stable value.</p>
+
+          <p>The imperative part of the program decides which value to provide:</p>
+
+          <pre class="code-block"><code>current = database(connection)
+
+proposed = with(current, [
+  approve(task: 42),
+  assign(task: 57, owner: "Mina")
+])
+
+now      = evaluateRelease(current, release: 7)
+whatIf   = evaluateRelease(proposed, release: 7)
+lastWeek = evaluateRelease(
+  asOf(current, "2026-09-08"),
+  release: 7
+)</code></pre>
+
+          <p><code>with</code> returns a new database value containing the proposed facts. It does not change <code>current</code>, write to storage, or modify the connection. Both values remain queryable, so the application can compare them, inspect entities in either one, run the same policy rules, and discard the proposal when it is finished.</p>
+
+          <div class="article-note">
+            <p><strong>The useful shift is not merely that snapshots exist.</strong> It is that current, historical, and hypothetical state share the same data model and query interface. Application functions do not need a separate “preview mode.”</p>
+          </div>
+
+          <h2>A natural functional core</h2>
+
+          <p>Functional core / imperative shell is a useful design pattern: keep decisions in deterministic functions and push I/O to the boundary. Databases make that boundary difficult because domain logic commonly queries through a live connection.</p>
+
+          <p>An immutable database value moves the boundary. The shell reads the current value, passes it to the core, then performs the returned transaction and effects:</p>
+
+          <pre class="code-block"><code><span class="code-comment">// Functional core</span>
+function decide(db, command):
+  if not allowed(db, command):
+    return rejection
+
+  facts = factsFor(command)
+  nextDb = with(db, facts)
+  effects = effectsFor(nextDb, command)
+
+  return { facts, effects }
+
+<span class="code-comment">// Imperative shell</span>
+db = database(connection)
+result = decide(db, command)
+
+transact(connection, result.facts)
+send(result.effects)</code></pre>
+
+          <p>The core is not limited to a small object graph prepared by the shell. It can query the complete database value, follow relationships, use rules, and derive exactly the view it needs. Yet it still has no authority to change durable state.</p>
+
+          <p>Testing follows the same shape. A test creates a database value, passes it to <code>decide</code>, and asserts on returned facts and effects. Testing a regression against old state or a proposed migration does not require a special repository implementation; it requires a different value.</p>
+
+          <h2>History without a second model</h2>
+
+          <p>Audit logs often answer “what was written?” while application code needs to answer “what was true?” Reconstructing the second answer can require replay logic or a parallel historical representation.</p>
+
+          <p>When earlier database states are themselves database values, the ordinary application query remains useful:</p>
+
+          <pre class="code-block"><code>whenApproved = asOf(current, approvalTransaction)
+
+decision = evaluateRelease(
+  whenApproved,
+  release: 7
+)</code></pre>
+
+          <p>A history view can expose assertions and retractions when the audit trail itself is the subject of the query. An as-of value answers normal domain questions at a chosen point in time. The application can use both without translating its data into a different historical API.</p>
+
+          <h2>Concurrency becomes explicit</h2>
+
+          <p>A database value is stable even while the connection accepts later transactions. That is valuable for long-running calculations and user interfaces: all reads in one operation can share a coherent basis instead of observing a mixture of states.</p>
+
+          <p>Stability does not remove concurrency. A hypothetical value can become stale before its facts are transacted. The shell still needs the appropriate domain checks—compare-and-swap, uniqueness constraints, or another form of optimistic validation—when it commits. The advantage is that speculative reasoning and durable mutation are separate, visible steps.</p>
+
+          <h2>Not every byte belongs in history</h2>
+
+          <p>Immutable facts are a good fit for durable domain state, relationships, decisions, and information whose provenance matters. They are a poor fit for every cache entry, background-job lease, session, or derived search index.</p>
+
+          <p>VevDB therefore exposes the SQLite library already bundled with its durable storage layer. An application can keep domain facts and history in VevDB while using ordinary SQL for operational and ephemeral data. The stores use separate files and transactions do not span both, but the application ships one native library rather than treating one storage model as a universal answer.</p>
+
+          <h2>Where this model earns its cost</h2>
+
+          <p>A new database is not justified by architectural elegance alone. Immutable database values become interesting when an application needs more than one of these:</p>
+
+          <ul>
+            <li>queryable history or auditability;</li>
+            <li>previews, planning, validation, or other what-if operations;</li>
+            <li>stable snapshots for long-running work;</li>
+            <li>rich, connected domain data that benefits from Datalog;</li>
+            <li>the same decision logic applied to current, past, and proposed state.</li>
+          </ul>
+
+          <p>If the application only needs current rows and straightforward lookups, SQLite is likely the simpler choice. If it needs a distributed database service, horizontal scaling, or high-availability coordination, a small embedded component is the wrong category of tool.</p>
+
+          <p>The form factor matters most in software that must remain self-contained: desktop applications, developer tools, on-premises products, and small single-node services. VevDB runs in-process without a JVM or database server. The native SDK downloads for the current release are about 3–4 MB, including the query engine and bundled SQLite storage layer.</p>
+
+          <h2>The database value is the API</h2>
+
+          <p>Datalog, history, and hypothetical transactions are individually useful. Their combination becomes more powerful when they all operate on the same kind of value. The application can capture one world, create another, and pass either one through the same program.</p>
+
+          <p>That is the central idea behind VevDB. Developers familiar with Datomic will recognize database values, <code>db-with</code>, <code>as-of</code>, history, pull, and Datalog. VevDB packages those ideas as a small native component intended to live inside the application.</p>
+
+          <section class="article-summary" aria-labelledby="try-title">
+            <h2 id="try-title">Try the model</h2>
+            <p>Open a store, transact a few facts, capture a database value, and create a hypothetical successor without changing the connection.</p>
+            <div class="article-actions">
+              <a class="button primary" href="/docs/getting-started/" data-analytics-event="getting_started_clicked" data-analytics-location="article_end">Get started</a>
+              <a class="button secondary" href="https://github.com/vevdb/vev/releases/latest" data-analytics-event="download_clicked" data-analytics-location="article_end">Download VevDB</a>
+              <a class="button secondary" href="mailto:hello@vevdb.com?subject=Database%20as%20a%20value" data-analytics-event="evaluation_contact_clicked" data-analytics-location="article_end" data-analytics-method="email">Tell us what you are building</a>
+            </div>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <footer class="article-footer">
+      <span>VevDB — query what is, what was, and what could be.</span>
+      <span><a href="/articles/">All articles</a> · <a href="/docs/">Documentation</a> · <a href="https://github.com/vevdb/vev">Source</a></span>
+    </footer>
+  </body>
+</html>

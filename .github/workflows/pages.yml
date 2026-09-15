@@ -48,7 +48,8 @@ jobs:
       - name: Assemble static site
         run: |
           mkdir -p _site
-          cp CNAME analytics-config.js analytics.js docs.css index.html robots.txt style.css vev-mark.png vevdb.png _site/
+          cp CNAME analytics-config.js analytics.js article.css docs.css index.html robots.txt style.css vev-mark.png vevdb.png _site/
+          cp -R articles _site/
           node scripts/build-analytics-config.mjs --output _site/analytics-config.js
           node scripts/build-docs.mjs \
             --source _content/vev/docs \

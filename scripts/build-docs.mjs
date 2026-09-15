@@ -266,9 +266,11 @@ for (const item of documents) {
   }));
 }
 
-const urls = ['/', '/docs/'].concat(documents.map(function (item) {
-  return routeFor(item.slug);
-}));
+const urls = ['/', '/docs/']
+  .concat(config.staticRoutes || [])
+  .concat(documents.map(function (item) {
+    return routeFor(item.slug);
+  }));
 const sitemap = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',

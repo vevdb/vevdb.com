@@ -15,6 +15,10 @@ python3 -m http.server 8000
 
 Then open <http://localhost:8000>.
 
+The long-form product essays live under `articles/`. They are plain HTML so
+they can be previewed with the same server and remain independent of the
+documentation checkout.
+
 ## Publishing
 
 The Pages workflow builds and publishes the complete static site on every push
