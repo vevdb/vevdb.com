@@ -96,7 +96,7 @@ code, pre { font-family: var(--mono); }
 .article-header nav a:hover { color: var(--accent-dark); }
 
 .article-shell {
-  width: min(760px, calc(100% - 48px));
+  width: min(920px, calc(100% - 48px));
   margin-inline: auto;
   padding: clamp(5rem, 10vw, 8rem) 0 6rem;
 }

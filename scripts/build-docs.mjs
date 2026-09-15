@@ -104,8 +104,8 @@ function renderNavigation(config, currentSlug) {
 
 function pageTemplate(config, page) {
   const title = page.isIndex
-    ? 'Documentation — ' + config.siteName
-    : page.title + ' — ' + config.siteName + ' Documentation';
+    ? 'Documentation. ' + config.siteName
+    : page.title + '. ' + config.siteName + ' Documentation';
   const canonical = config.siteUrl + page.route;
   const navigation = renderNavigation(config, page.slug);
   return [

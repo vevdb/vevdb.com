@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>The Database as a Value — VevDB</title>
+    <title>The Database as a Value. VevDB</title>
     <meta name="description" content="Rich Hickey’s Datomic model made the database an immutable value. See what it enables and why VevDB brings it to native applications.">
     <meta name="author" content="Andreas Flakstad">
     <meta name="theme-color" content="#f2f5f3">
@@ -19,7 +19,7 @@
     <meta property="og:description" content="Rich Hickey’s Datomic model made the database an immutable value. See how VevDB brings it to native applications.">
     <meta property="og:url" content="https://vevdb.com/articles/the-database-as-a-value/">
     <meta property="og:image" content="https://vevdb.com/social/database-as-a-value.png">
-    <meta property="og:image:alt" content="The Database as a Value — Current, Past, Proposed">
+    <meta property="og:image:alt" content="The Database as a Value. Current, Past, Proposed">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="article:published_time" content="2026-09-15">
@@ -68,7 +68,7 @@
       <article>
         <header>
           <h1 class="article-title">The Database as a Value</h1>
-          <p class="article-lede">In his 2012 Datomic talk <a href="https://www.infoq.com/presentations/Datomic-Database-Value/"><em>The Database as a Value</em></a>, Rich Hickey presented a deceptively simple idea: a database can be an immutable value. The consequence is striking. An application can hold several complete worlds at once&mdash;the present, last Tuesday, and the result of a transaction that has not happened&mdash;and pass any of them to the same function. VevDB brings that model to a small native component.</p>
+          <p class="article-lede">In his 2012 Datomic talk <a href="https://www.infoq.com/presentations/Datomic-Database-Value/"><em>The Database as a Value</em></a>, Rich Hickey presented a deceptively simple idea: a database can be an immutable value. The consequence is striking. An application can hold several complete worlds at once. These can represent the present, last Tuesday, and the result of a transaction that has not happened. Any of them can be passed to the same function. VevDB brings that model to a small native component.</p>
           <div class="article-meta">
             <span>Andreas Flakstad</span>
             <span><time datetime="2026-09-15">September 15, 2026</time></span>
@@ -79,36 +79,35 @@
         <div class="article-body">
           <p>Most application code receives an ID, a repository, or a connection. Every query therefore reaches into one particular world: whatever happens to be in the database now.</p>
 
-          <p>The limitation becomes visible when the application needs to ask a different question. Would this release be valid if we approved these tasks? What did the system know when it made yesterday’s decision? Can we show a preview without first writing temporary state?</p>
+          <p>The limitation becomes visible when the application needs to ask a different question. Would this permission change expose customer data? Who could access the production console last Tuesday? Can we preview the consequences before granting anything?</p>
 
-          <p>What-if state, historical state, previews, and tests then acquire separate representations&mdash;staging tables, copied objects, audit logs, replay machinery, and repository mocks. The hard part is no longer creating them. It is keeping all those representations faithful to the same domain.</p>
+          <p>What-if state, historical state, previews, and tests then acquire separate representations. Staging tables, copied objects, audit logs, replay machinery, and repository mocks. The hard part is no longer creating them. It is keeping all those representations faithful to the same domain.</p>
 
           <p>There is another programming model: make the database itself an immutable value.</p>
 
           <h2>One function. Three worlds.</h2>
 
-          <p>Imagine a release-planning application. Before a release can be published, it must check dependencies, approvals, unresolved risks, and policy rules. Express that decision as an ordinary function whose first argument is a database value:</p>
+          <p>Imagine an access-control editor. Before granting a team a new role, it must discover which systems become reachable and which security policies would be broken. Express that analysis as an ordinary function whose first argument is a database value:</p>
 
           <pre class="code-block"><code><span class="code-comment">// Pseudocode. Values in, values out.</span>
-function evaluateRelease(db, release):
+function evaluateAccess(db, team):
   return {
-    blockers: query(db, blockers_for(release)),
-    effects:  query(db, effects_for(release))
+    reachable:  query(db, resources_reachable_by(team)),
+    violations: query(db, policies_broken_by(team))
   }
 
 current  = database(connection)
-past     = asOf(current, lastWeek)
+past     = asOf(current, lastQuarter)
 
 proposed = with(current, [
-  approve(task: 42),
-  assign(task: 57, owner: "Mina")
+  grant(team: "Contractors", role: "Billing admin")
 ])
 
-evaluateRelease(current,  release: 7)  <span class="code-comment">// what is</span>
-evaluateRelease(past,     release: 7)  <span class="code-comment">// what was</span>
-evaluateRelease(proposed, release: 7)  <span class="code-comment">// what could be</span></code></pre>
+evaluateAccess(current,  team: "Contractors")  <span class="code-comment">// what is</span>
+evaluateAccess(past,     team: "Contractors")  <span class="code-comment">// what was</span>
+evaluateAccess(proposed, team: "Contractors")  <span class="code-comment">// what could be</span></code></pre>
 
-          <p><code>evaluateRelease</code> does not know which world it received. It sees one complete database value.</p>
+          <p><code>evaluateAccess</code> does not know which world it received. It sees one complete database value.</p>
 
           <p><code>with</code> produces a fully queryable successor value. Keep both worlds, run the same rules against each, compare the outcomes, then discard the proposal or transact its facts.</p>
 
@@ -118,7 +117,7 @@ evaluateRelease(proposed, release: 7)  <span class="code-comment">// what could 
 
           <h2>Pure functions with the whole world</h2>
 
-          <p>Functional core / imperative shell is easy to recommend until the business logic needs the database. Then the core is either starved of context, fed a carefully assembled object graph, or allowed to reach through a repository and perform I/O.</p>
+          <p>Functional core / imperative shell splits a program in two. A deterministic core decides what should happen. A thin shell owns I/O and makes it happen. The pattern is easy to recommend until the business logic needs the database. Then the core is either starved of context, fed a carefully assembled object graph, or allowed to reach through a repository and perform I/O.</p>
 
           <p>A database value removes that tradeoff. Give the pure function the whole world. The shell chooses a value, passes it to the core, then performs the returned transaction and effects:</p>
 
@@ -150,11 +149,11 @@ send(result.effects)</code></pre>
 
           <p>When earlier database states are themselves database values, the ordinary application query remains useful:</p>
 
-          <pre class="code-block"><code>whenApproved = asOf(current, approvalTransaction)
+          <pre class="code-block"><code>lastQuarter = asOf(current, quarterEnd)
 
-decision = evaluateRelease(
-  whenApproved,
-  release: 7
+report = evaluateAccess(
+  lastQuarter,
+  team: "Contractors"
 )</code></pre>
 
           <p>A history view exposes assertions and retractions when the audit trail itself is the question. An as-of value answers ordinary domain questions at a chosen point in time. The rest of the application keeps using the same functions.</p>
@@ -201,7 +200,7 @@ decision = evaluateRelease(
     </main>
 
     <footer class="article-footer">
-      <span>VevDB — query what is, what was, and what could be.</span>
+      <span>VevDB. Query what is, what was, and what could be.</span>
       <span><a href="/articles/">All articles</a> · <a href="/docs/">Documentation</a> · <a href="https://github.com/vevdb/vev">Source</a></span>
     </footer>
   </body>

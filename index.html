@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VevDB — Native embedded database for history and what-if state</title>
-    <meta name="description" content="VevDB is a small native embedded database with immutable database values, Datalog, queryable history, and hypothetical transactions—without a JVM or database server.">
+    <title>VevDB. Native embedded database for history and what-if state</title>
+    <meta name="description" content="VevDB is a small native embedded database with immutable database values, Datalog, queryable history, and hypothetical transactions. No JVM or database server.">
     <meta name="theme-color" content="#f2f5f3">
     <link rel="canonical" href="https://vevdb.com/">
     <link rel="icon" href="/vev-mark.png" type="image/png">
@@ -14,15 +14,15 @@
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="VevDB">
-    <meta property="og:title" content="VevDB — Query what is, what was, and what could be">
+    <meta property="og:title" content="VevDB. Query what is, what was, and what could be">
     <meta property="og:description" content="A small native embedded database for current state, queryable history, and hypothetical transactions.">
     <meta property="og:url" content="https://vevdb.com/">
     <meta property="og:image" content="https://vevdb.com/social/vevdb-home.png">
-    <meta property="og:image:alt" content="VevDB — Query what is, what was, and what could be">
+    <meta property="og:image:alt" content="VevDB. Query what is, what was, and what could be">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="VevDB — Query what is, what was, and what could be">
+    <meta name="twitter:title" content="VevDB. Query what is, what was, and what could be">
     <meta name="twitter:description" content="A small native embedded database for current state, queryable history, and hypothetical transactions.">
     <meta name="twitter:image" content="https://vevdb.com/social/vevdb-home.png">
 
@@ -62,8 +62,8 @@
           <h1 id="hero-title">Query what is, what was, and what could be.</h1>
           <p class="hero-lede">
             VevDB is a native embedded database with immutable database values,
-            Datalog, queryable history, and hypothetical transactions&mdash;without
-            a JVM or database server.
+            Datalog, queryable history, and hypothetical transactions. No JVM or
+            database server.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="/docs/getting-started/" data-analytics-event="getting_started_clicked" data-analytics-location="hero">Get started</a>
@@ -133,10 +133,10 @@ proposed = <span class="syntax-call">with</span>(current,
         <div class="value-copy">
           <h2 id="values-title">Pass the whole database to a function.</h2>
           <p>
-            Capture an immutable database value&mdash;a stable snapshot, not a copy
-            of all its data&mdash;and pass it into ordinary application functions.
-            Each function sees one stable world, can query it freely, and returns
-            data instead of performing I/O.
+            Capture an immutable database value and pass it into ordinary
+            application functions. It is a stable snapshot, not a copy of all its
+            data. Each function sees one stable world, can query it freely, and
+            returns data instead of performing I/O.
           </p>
           <p>
             This makes a functional core and imperative shell a natural fit:
@@ -241,7 +241,7 @@ result = <span class="syntax-call">decide</span>(db, command)
             <p>
               Know Datomic? VevDB follows the same style of semantics: datoms,
               immutable database values, Datalog, pull, entities, indexes,
-              history, <code>as-of</code>, and <code>db-with</code>&mdash;packaged as
+              history, <code>as-of</code>, and <code>db-with</code>. All packaged as
               a small in-process native library.
             </p>
             <a href="/docs/datomic-syntax/">See the syntax guide</a>

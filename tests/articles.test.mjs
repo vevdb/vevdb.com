@@ -12,6 +12,7 @@ const article = fs.readFileSync(
 );
 const docsConfig = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'docs.config.json'), 'utf8'));
 const workflow = fs.readFileSync(path.join(repositoryRoot, '.github/workflows/pages.yml'), 'utf8');
+const articleStyles = fs.readFileSync(path.join(repositoryRoot, 'article.css'), 'utf8');
 
 function pngDimensions(relativePath) {
   const image = fs.readFileSync(path.join(repositoryRoot, relativePath));
@@ -53,7 +54,7 @@ test('article routes and assets are included in the deployed site', () => {
 });
 
 test('homepage presents the launch positioning and social preview', () => {
-  assert.match(homepage, /<title>VevDB — Native embedded database for history and what-if state<\/title>/);
+  assert.match(homepage, /<title>VevDB\. Native embedded database for history and what-if state<\/title>/);
   assert.match(homepage, /Start with the problem you have\./);
   assert.match(homepage, /a stable snapshot, not a copy/);
   assert.match(homepage, /what you would need before you could adopt it/);
@@ -66,4 +67,23 @@ test('homepage presents the launch positioning and social preview', () => {
 test('social preview images use the Open Graph dimensions declared in metadata', () => {
   assert.deepEqual(pngDimensions('social/vevdb-home.png'), { width: 1200, height: 630 });
   assert.deepEqual(pngDimensions('social/database-as-a-value.png'), { width: 1200, height: 630 });
+});
+
+test('article and article index use the same desktop content width', () => {
+  assert.match(articleStyles, /\.article-shell \{\s*width: min\(920px, calc\(100% - 48px\)\);/);
+  assert.match(articleStyles, /\.article-index \{\s*width: min\(920px, calc\(100% - 48px\)\);/);
+});
+
+test('site prose and generated page titles do not use em dashes', () => {
+  const emDashPattern = new RegExp([
+    '\u2014',
+    '&m' + 'dash;',
+    '&#82' + '12;',
+    '&#x20' + '14;'
+  ].join('|'), 'i');
+  for (const source of [homepage, articleIndex, article, workflow]) {
+    assert.doesNotMatch(source, emDashPattern);
+  }
+  const docsBuilder = fs.readFileSync(path.join(repositoryRoot, 'scripts/build-docs.mjs'), 'utf8');
+  assert.doesNotMatch(docsBuilder, emDashPattern);
 });
