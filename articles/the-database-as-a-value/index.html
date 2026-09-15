@@ -85,7 +85,7 @@
 
           <p>There is another programming model: make the database itself an immutable value.</p>
 
-          <h2>One function. Three worlds.</h2>
+          <h2>Change the database value, not the function</h2>
 
           <p>Imagine an access-control editor. Before granting a team a new role, it must discover which systems become reachable and which security policies would be broken. Express that analysis as an ordinary function whose first argument is a database value:</p>
 
@@ -115,7 +115,7 @@ proposed = <span class="syntax-call">with</span>(current, [
             <p><strong>The useful shift is not merely that snapshots exist.</strong> It is that current, historical, and hypothetical state share the same data model and query interface. Application functions do not need a separate “preview mode.”</p>
           </div>
 
-          <h2>Pure functions with the whole world</h2>
+          <h2>The whole database as input to a pure function</h2>
 
           <p>Functional core / imperative shell splits a program in two. A deterministic core decides what should happen. A thin shell owns I/O and makes it happen. The pattern is easy to recommend until the business logic needs the database. Then the core is either starved of context, fed a carefully assembled object graph, or allowed to reach through a repository and perform I/O.</p>
 
