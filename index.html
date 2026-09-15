@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VevDB — Query current, historical, and hypothetical state</title>
+    <title>VevDB — Native embedded database for history and what-if state</title>
     <meta name="description" content="VevDB is a small native embedded database with immutable database values, Datalog, queryable history, and hypothetical transactions—without a JVM or database server.">
     <meta name="theme-color" content="#f2f5f3">
     <link rel="canonical" href="https://vevdb.com/">
@@ -14,12 +14,17 @@
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="VevDB">
-    <meta property="og:title" content="VevDB — Query current, historical, and hypothetical state">
+    <meta property="og:title" content="VevDB — Query what is, what was, and what could be">
     <meta property="og:description" content="A small native embedded database for current state, queryable history, and hypothetical transactions.">
     <meta property="og:url" content="https://vevdb.com/">
-    <meta property="og:image" content="https://vevdb.com/vevdb.png">
-    <meta property="og:image:alt" content="The VevDB logo">
+    <meta property="og:image" content="https://vevdb.com/social/vevdb-home.png">
+    <meta property="og:image:alt" content="VevDB — Query what is, what was, and what could be">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="VevDB — Query what is, what was, and what could be">
+    <meta name="twitter:description" content="A small native embedded database for current state, queryable history, and hypothetical transactions.">
+    <meta name="twitter:image" content="https://vevdb.com/social/vevdb-home.png">
 
     <script type="application/ld+json">
       {
@@ -99,7 +104,7 @@ proposed = <span class="syntax-call">with</span>(current,
 
       <section id="model" class="section model-section" aria-labelledby="model-title">
         <div class="section-heading">
-          <h2 id="model-title">One useful capability can open up the whole model</h2>
+          <h2 id="model-title">Start with the problem you have.</h2>
           <p>You do not need to arrive wanting a new database paradigm. Start with history, a proposed change, or connected application data.</p>
         </div>
         <div class="state-grid problem-grid">
@@ -128,9 +133,10 @@ proposed = <span class="syntax-call">with</span>(current,
         <div class="value-copy">
           <h2 id="values-title">Pass the whole database to a function.</h2>
           <p>
-            Capture an immutable database value and pass the whole database into
-            ordinary application functions. Each function sees one stable world,
-            can query it freely, and returns data instead of performing I/O.
+            Capture an immutable database value&mdash;a stable snapshot, not a copy
+            of all its data&mdash;and pass it into ordinary application functions.
+            Each function sees one stable world, can query it freely, and returns
+            data instead of performing I/O.
           </p>
           <p>
             This makes a functional core and imperative shell a natural fit:
@@ -346,11 +352,12 @@ result = <span class="syntax-call">decide</span>(db, command)
           <p>
             We would love to hear about projects where VevDB might be useful,
             whether you are actively evaluating it or simply exploring the
-            model. Tell us what you are building and where it needs to run.
+            model. If production is the goal, we are especially interested in
+            what you would need before you could adopt it.
           </p>
           <div class="evaluation-actions">
-            <a class="button evaluation-button" href="mailto:hello@vevdb.com?subject=Considering%20VevDB%20for%20a%20product&amp;body=What%20are%20you%20building%3F%0A%0AWhich%20capabilities%20do%20you%20need%20%28history%2C%20hypothetical%20state%2C%20Datalog%2C%20native%20footprint%2C%20or%20something%20else%29%3F%0A%0AWhich%20platform%20and%20language%20are%20you%20using%3F%0A%0AWhich%20integration%20requirements%20matter%20most%3F" data-analytics-event="evaluation_contact_clicked" data-analytics-location="evaluation_section" data-analytics-method="email">Email hello@vevdb.com</a>
-            <a class="button evaluation-secondary" href="https://github.com/vevdb/vev/issues/new?title=Evaluating%20VevDB%20for%20%5Bproduct%5D&amp;body=What%20are%20you%20building%3F%0A%0AWhich%20capabilities%20do%20you%20need%20%28history%2C%20hypothetical%20state%2C%20Datalog%2C%20native%20footprint%2C%20or%20something%20else%29%3F%0A%0AWhich%20platform%20and%20language%20are%20you%20using%3F%0A%0AWhich%20integration%20requirements%20matter%20most%3F" data-analytics-event="evaluation_contact_clicked" data-analytics-location="evaluation_section" data-analytics-method="github_issue">Open a public GitHub issue</a>
+            <a class="button evaluation-button" href="mailto:hello@vevdb.com?subject=Considering%20VevDB%20for%20a%20project&amp;body=What%20are%20you%20building%3F%0A%0AWhich%20VevDB%20capabilities%20are%20relevant%3F%0A%0AWhich%20platform%20and%20language%20are%20you%20using%3F%0A%0AIf%20production%20is%20the%20goal%2C%20what%20would%20you%20need%20before%20you%20could%20adopt%20VevDB%3F" data-analytics-event="evaluation_contact_clicked" data-analytics-location="evaluation_section" data-analytics-method="email">Email hello@vevdb.com</a>
+            <a class="button evaluation-secondary" href="https://github.com/vevdb/vev/issues/new?title=Considering%20VevDB%20for%20%5Bproject%5D&amp;body=What%20are%20you%20building%3F%0A%0AWhich%20VevDB%20capabilities%20are%20relevant%3F%0A%0AWhich%20platform%20and%20language%20are%20you%20using%3F%0A%0AIf%20production%20is%20the%20goal%2C%20what%20would%20you%20need%20before%20you%20could%20adopt%20VevDB%3F" data-analytics-event="evaluation_contact_clicked" data-analytics-location="evaluation_section" data-analytics-method="github_issue">Open a public GitHub issue</a>
           </div>
           <small>Email is private. The GitHub alternative opens a pre-filled public issue.</small>
         </div>

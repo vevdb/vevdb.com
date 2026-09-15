@@ -13,6 +13,14 @@ const article = fs.readFileSync(
 const docsConfig = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'docs.config.json'), 'utf8'));
 const workflow = fs.readFileSync(path.join(repositoryRoot, '.github/workflows/pages.yml'), 'utf8');
 
+function pngDimensions(relativePath) {
+  const image = fs.readFileSync(path.join(repositoryRoot, relativePath));
+  return {
+    width: image.readUInt32BE(16),
+    height: image.readUInt32BE(20)
+  };
+}
+
 test('homepage and article index link to the database-value article', () => {
   const route = '/articles/the-database-as-a-value/';
   assert.match(homepage, new RegExp(route));
@@ -22,6 +30,10 @@ test('homepage and article index link to the database-value article', () => {
 test('article has canonical, sharing, structured data, and analytics metadata', () => {
   assert.match(article, /<link rel="canonical" href="https:\/\/vevdb\.com\/articles\/the-database-as-a-value\/">/);
   assert.match(article, /<meta property="og:type" content="article">/);
+  assert.match(article, /<meta property="og:image" content="https:\/\/vevdb\.com\/social\/database-as-a-value\.png">/);
+  assert.match(article, /<meta property="og:image:width" content="1200">/);
+  assert.match(article, /<meta property="og:image:height" content="630">/);
+  assert.match(article, /<meta name="twitter:image" content="https:\/\/vevdb\.com\/social\/database-as-a-value\.png">/);
   assert.match(article, /"@type": "TechArticle"/);
   assert.match(article, /<script src="\/analytics-config\.js"><\/script>/);
   assert.match(article, /<script src="\/analytics\.js"><\/script>/);
@@ -36,5 +48,22 @@ test('article routes and assets are included in the deployed site', () => {
     '/articles/the-database-as-a-value/'
   ]);
   assert.match(workflow, /cp -R articles _site\//);
+  assert.match(workflow, /cp -R social _site\//);
   assert.match(workflow, /article\.css/);
+});
+
+test('homepage presents the launch positioning and social preview', () => {
+  assert.match(homepage, /<title>VevDB — Native embedded database for history and what-if state<\/title>/);
+  assert.match(homepage, /Start with the problem you have\./);
+  assert.match(homepage, /a stable snapshot, not a copy/);
+  assert.match(homepage, /what you would need before you could adopt it/);
+  assert.match(homepage, /<meta property="og:image" content="https:\/\/vevdb\.com\/social\/vevdb-home\.png">/);
+  assert.match(homepage, /<meta property="og:image:width" content="1200">/);
+  assert.match(homepage, /<meta property="og:image:height" content="630">/);
+  assert.match(homepage, /<meta name="twitter:image" content="https:\/\/vevdb\.com\/social\/vevdb-home\.png">/);
+});
+
+test('social preview images use the Open Graph dimensions declared in metadata', () => {
+  assert.deepEqual(pngDimensions('social/vevdb-home.png'), { width: 1200, height: 630 });
+  assert.deepEqual(pngDimensions('social/database-as-a-value.png'), { width: 1200, height: 630 });
 });
