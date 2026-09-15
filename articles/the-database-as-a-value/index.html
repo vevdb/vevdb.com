@@ -119,7 +119,7 @@ evaluateAccess(proposed, team: "Contractors")  <span class="code-comment">// wha
 
           <p>Functional core / imperative shell splits a program in two. A deterministic core decides what should happen. A thin shell owns I/O and makes it happen. The pattern is easy to recommend until the business logic needs the database. Then the core is either starved of context, fed a carefully assembled object graph, or allowed to reach through a repository and perform I/O.</p>
 
-          <p>A database value removes that tradeoff. Give the pure function the whole world. The shell chooses a value, passes it to the core, then performs the returned transaction and effects:</p>
+          <p>A database value removes that tradeoff. Give the pure function a stable view of the whole database. It is not a copy of all its data. The shell chooses a value, passes it to the core, then performs the returned transaction and effects:</p>
 
           <pre class="code-block"><code><span class="code-comment">// Functional core</span>
 function decide(db, command):
@@ -182,7 +182,7 @@ report = evaluateAccess(
 
           <h2>The database value is the API</h2>
 
-          <p>Once the database is a value, time stops being a separate application subsystem. <code>current</code>, <code>asOf(current, t)</code>, and <code>with(current, facts)</code> flow through the same functions. There is no preview repository, historical read model, or test double to keep in sync.</p>
+          <p>Once the database is a value, past and proposed state stop requiring separate application models. <code>current</code>, <code>asOf(current, t)</code>, and <code>with(current, facts)</code> flow through the same functions. The same domain logic can ask each value the same questions, without a separate preview repository or historical read model for that purpose.</p>
 
           <p><a href="https://docs.datomic.com/transactions/model.html">Datomic established this programming model.</a> VevDB changes where it can live: inside a native application, as a component small enough to ship with it.</p>
 
