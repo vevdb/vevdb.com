@@ -68,68 +68,59 @@
       <article>
         <header>
           <h1 class="article-title">The Database as a Value</h1>
-          <p class="article-lede">Rich Hickey used this title for his 2012 <a href="https://www.infoq.com/presentations/Datomic-Database-Value/">Datomic talk</a>, which showed how an immutable database value changes the programming model. The same function can reason about the present, the past, or a proposed future. VevDB brings that model to a small native component.</p>
+          <p class="article-lede">In his 2012 Datomic talk <a href="https://www.infoq.com/presentations/Datomic-Database-Value/"><em>The Database as a Value</em></a>, Rich Hickey presented a deceptively simple idea: a database can be an immutable value. The consequence is striking. An application can hold several complete worlds at once&mdash;the present, last Tuesday, and the result of a transaction that has not happened&mdash;and pass any of them to the same function. VevDB brings that model to a small native component.</p>
           <div class="article-meta">
             <span>Andreas Flakstad</span>
             <span><time datetime="2026-09-15">September 15, 2026</time></span>
-            <span>6 minute read</span>
+            <span>5 minute read</span>
           </div>
         </header>
 
         <div class="article-body">
-          <p>This programming model comes from <a href="https://docs.datomic.com/transactions/model.html">Datomic</a>, not VevDB. In Datomic, a database is an immutable value, and <code>d/with</code> is a pure function that applies transaction data and returns a new database value. VevDB deliberately follows those semantics. Its different bet is the form factor: make them available in a small, in-process native library without a JVM or database server.</p>
-
-          <p>Most application code does not receive a database. It receives an ID, a repository, or a connection, and reaches out to storage whenever it needs another fact. That is a practical default. It is also a hidden dependency on one particular world: whatever happens to be in the database at the moment the query runs.</p>
+          <p>Most application code receives an ID, a repository, or a connection. Every query therefore reaches into one particular world: whatever happens to be in the database now.</p>
 
           <p>The limitation becomes visible when the application needs to ask a different question. Would this release be valid if we approved these tasks? What did the system know when it made yesterday’s decision? Can we show a preview without first writing temporary state?</p>
 
-          <p>Those questions are often answered with separate mechanisms: staging tables, copied objects, audit records, event replay, test doubles, or validation code that operates on a second representation of the domain. Each mechanism can work. The complexity comes from keeping all of them consistent with the current database and with each other.</p>
+          <p>What-if state, historical state, previews, and tests then acquire separate representations&mdash;staging tables, copied objects, audit logs, replay machinery, and repository mocks. The hard part is no longer creating them. It is keeping all those representations faithful to the same domain.</p>
 
           <p>There is another programming model: make the database itself an immutable value.</p>
 
-          <h2>One function, several possible worlds</h2>
+          <h2>One function. Three worlds.</h2>
 
-          <p>Imagine a release-planning application. Before a release can be published, it must check dependencies, approvals, unresolved risks, and policy rules. The decision can be expressed as an ordinary function whose first argument is a database value:</p>
+          <p>Imagine a release-planning application. Before a release can be published, it must check dependencies, approvals, unresolved risks, and policy rules. Express that decision as an ordinary function whose first argument is a database value:</p>
 
           <pre class="code-block"><code><span class="code-comment">// Pseudocode. Values in, values out.</span>
-function evaluateRelease(db, releaseId):
-  blockers = query(db,
-    all blockers for releaseId)
+function evaluateRelease(db, release):
+  return {
+    blockers: query(db, blockers_for(release)),
+    effects:  query(db, effects_for(release))
+  }
 
-  effects = query(db,
-    notifications required for releaseId)
-
-  return { blockers, effects }</code></pre>
-
-          <p>The function does not open a connection and does not know whether its input represents production, a test fixture, last Tuesday, or a future that may never be committed. It simply asks questions of one stable value.</p>
-
-          <p>The imperative part of the program decides which value to provide:</p>
-
-          <pre class="code-block"><code>current = database(connection)
+current  = database(connection)
+past     = asOf(current, lastWeek)
 
 proposed = with(current, [
   approve(task: 42),
   assign(task: 57, owner: "Mina")
 ])
 
-now      = evaluateRelease(current, release: 7)
-whatIf   = evaluateRelease(proposed, release: 7)
-lastWeek = evaluateRelease(
-  asOf(current, "2026-09-08"),
-  release: 7
-)</code></pre>
+evaluateRelease(current,  release: 7)  <span class="code-comment">// what is</span>
+evaluateRelease(past,     release: 7)  <span class="code-comment">// what was</span>
+evaluateRelease(proposed, release: 7)  <span class="code-comment">// what could be</span></code></pre>
 
-          <p><code>with</code> returns a new database value containing the proposed facts. It does not change <code>current</code>, write to storage, or modify the connection. Both values remain queryable, so the application can compare them, inspect entities in either one, run the same policy rules, and discard the proposal when it is finished.</p>
+          <p><code>evaluateRelease</code> does not know which world it received. It sees one complete database value.</p>
+
+          <p><code>with</code> produces a fully queryable successor value. Keep both worlds, run the same rules against each, compare the outcomes, then discard the proposal or transact its facts.</p>
 
           <div class="article-note">
             <p><strong>The useful shift is not merely that snapshots exist.</strong> It is that current, historical, and hypothetical state share the same data model and query interface. Application functions do not need a separate “preview mode.”</p>
           </div>
 
-          <h2>A natural functional core</h2>
+          <h2>Pure functions with the whole world</h2>
 
-          <p>Functional core / imperative shell is a useful design pattern: keep decisions in deterministic functions and push I/O to the boundary. Databases make that boundary difficult because domain logic commonly queries through a live connection.</p>
+          <p>Functional core / imperative shell is easy to recommend until the business logic needs the database. Then the core is either starved of context, fed a carefully assembled object graph, or allowed to reach through a repository and perform I/O.</p>
 
-          <p>An immutable database value moves the boundary. The shell reads the current value, passes it to the core, then performs the returned transaction and effects:</p>
+          <p>A database value removes that tradeoff. Give the pure function the whole world. The shell chooses a value, passes it to the core, then performs the returned transaction and effects:</p>
 
           <pre class="code-block"><code><span class="code-comment">// Functional core</span>
 function decide(db, command):
@@ -149,13 +140,13 @@ result = decide(db, command)
 transact(connection, result.facts)
 send(result.effects)</code></pre>
 
-          <p>The core is not limited to a small object graph prepared by the shell. It can query the complete database value, follow relationships, use rules, and derive exactly the view it needs. Yet it still has no authority to change durable state.</p>
+          <p>The core does not have to be starved of context to stay pure. It can query the complete database value, follow relationships, use rules, and derive exactly the view it needs. Yet it still has no authority to change durable state.</p>
 
-          <p>Testing follows the same shape. A test creates a database value, passes it to <code>decide</code>, and asserts on returned facts and effects. Testing a regression against old state or a proposed migration does not require a special repository implementation; it requires a different value.</p>
+          <p>Tests need no repository mock. Pass <code>decide</code> a different value: a minimal fixture, last Tuesday&rsquo;s database, or a proposed migration.</p>
 
-          <h2>History without a second model</h2>
+          <h2>Ask the past the same question</h2>
 
-          <p>Audit logs often answer “what was written?” while application code needs to answer “what was true?” Reconstructing the second answer can require replay logic or a parallel historical representation.</p>
+          <p>An audit log tells you what was written. The application usually needs to know what was true.</p>
 
           <p>When earlier database states are themselves database values, the ordinary application query remains useful:</p>
 
@@ -166,41 +157,35 @@ decision = evaluateRelease(
   release: 7
 )</code></pre>
 
-          <p>A history view can expose assertions and retractions when the audit trail itself is the subject of the query. An as-of value answers normal domain questions at a chosen point in time. The application can use both without translating its data into a different historical API.</p>
+          <p>A history view exposes assertions and retractions when the audit trail itself is the question. An as-of value answers ordinary domain questions at a chosen point in time. The rest of the application keeps using the same functions.</p>
 
-          <h2>Concurrency becomes explicit</h2>
+          <p>A long-running calculation can also keep one coherent database value while new transactions arrive. If it later commits a proposal, normal optimistic checks still apply. Reasoning about a value and changing durable state remain separate operations.</p>
 
-          <p>A database value is stable even while the connection accepts later transactions. That is valuable for long-running calculations and user interfaces: all reads in one operation can share a coherent basis instead of observing a mixture of states.</p>
+          <h2>One library, two storage models</h2>
 
-          <p>Stability does not remove concurrency. A hypothetical value can become stale before its facts are transacted. The shell still needs the appropriate domain checks—compare-and-swap, uniqueness constraints, or another form of optimistic validation—when it commits. The advantage is that speculative reasoning and durable mutation are separate, visible steps.</p>
+          <p>Keep durable domain facts, relationships, and decisions in VevDB. Use the <a href="/docs/sqlite/">bundled SQLite API</a> for caches, sessions, job state, and derived indexes. One native library gives the application two deliberately different tools.</p>
 
-          <h2>Not every byte belongs in history</h2>
+          <h2>Where database values change the design</h2>
 
-          <p>Immutable facts are a good fit for durable domain state, relationships, decisions, and information whose provenance matters. They are a poor fit for every cache entry, background-job lease, session, or derived search index.</p>
-
-          <p>VevDB therefore exposes the SQLite library already bundled with its durable storage layer. An application can keep domain facts and history in VevDB while using ordinary SQL for operational and ephemeral data. The stores use separate files and transactions do not span both, but the application ships one native library rather than treating one storage model as a universal answer.</p>
-
-          <h2>Where this model earns its cost</h2>
-
-          <p>A new database is not justified by architectural elegance alone. Immutable database values become interesting when an application needs more than one of these:</p>
+          <p>The model matters when an application needs to:</p>
 
           <ul>
-            <li>queryable history or auditability;</li>
-            <li>previews, planning, validation, or other what-if operations;</li>
-            <li>stable snapshots for long-running work;</li>
-            <li>rich, connected domain data that benefits from Datalog;</li>
-            <li>the same decision logic applied to current, past, and proposed state.</li>
+            <li>preview a change before committing it;</li>
+            <li>run today&rsquo;s decision logic against historical state;</li>
+            <li>keep one coherent world during long-running work;</li>
+            <li>compare alternative plans using the same rules;</li>
+            <li>navigate connected domain facts without preparing a second object model.</li>
           </ul>
 
-          <p>If the application only needs current rows and straightforward lookups, SQLite is likely the simpler choice. If it needs a distributed database service, horizontal scaling, or high-availability coordination, a small embedded component is the wrong category of tool.</p>
+          <p>For straightforward current-state rows, SQLite is usually simpler. Distributed coordination belongs to another class of database.</p>
 
           <p>The form factor matters most in software that must remain self-contained: desktop applications, developer tools, on-premises products, and small single-node services. VevDB runs in-process without a JVM or database server. The native SDK downloads for the current release are about 3–4 MB, including the query engine and bundled SQLite storage layer.</p>
 
           <h2>The database value is the API</h2>
 
-          <p>Datalog, history, and hypothetical transactions are individually useful. Their combination becomes more powerful when they all operate on the same kind of value. The application can capture one world, create another, and pass either one through the same program.</p>
+          <p>Once the database is a value, time stops being a separate application subsystem. <code>current</code>, <code>asOf(current, t)</code>, and <code>with(current, facts)</code> flow through the same functions. There is no preview repository, historical read model, or test double to keep in sync.</p>
 
-          <p>VevDB inherits this model directly from Datomic: database values, <code>db-with</code>, <code>as-of</code>, history, pull, and Datalog. Its contribution is the deployment shape—a small native component intended to live inside the application.</p>
+          <p><a href="https://docs.datomic.com/transactions/model.html">Datomic established this programming model.</a> VevDB changes where it can live: inside a native application, as a component small enough to ship with it.</p>
 
           <section class="article-summary" aria-labelledby="try-title">
             <h2 id="try-title">Try the model</h2>
