@@ -163,7 +163,11 @@ code, pre { font-family: var(--mono); }
   line-height: 1.8;
 }
 .code-block code { padding: 0; background: transparent; }
-.code-comment { color: #8290a4; }
+.syntax-type,
+.syntax-call { color: #68d0d0; }
+.syntax-string { color: #c5db91; }
+.code-comment,
+.syntax-comment { color: #8290a4; }
 .article-note {
   margin: 2.3rem 0;
   padding: 1.35rem 1.5rem;

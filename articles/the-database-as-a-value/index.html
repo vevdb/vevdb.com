@@ -89,23 +89,23 @@
 
           <p>Imagine an access-control editor. Before granting a team a new role, it must discover which systems become reachable and which security policies would be broken. Express that analysis as an ordinary function whose first argument is a database value:</p>
 
-          <pre class="code-block"><code><span class="code-comment">// Pseudocode. Values in, values out.</span>
-function evaluateAccess(db, team):
+          <pre class="code-block"><code><span class="syntax-comment">// Pseudocode. Values in, values out.</span>
+function <span class="syntax-call">evaluateAccess</span>(db, team):
   return {
-    reachable:  query(db, resources_reachable_by(team)),
-    violations: query(db, policies_broken_by(team))
+    reachable:  <span class="syntax-call">query</span>(db, resources_reachable_by(team)),
+    violations: <span class="syntax-call">query</span>(db, policies_broken_by(team))
   }
 
-current  = database(connection)
-past     = asOf(current, lastQuarter)
+current  = <span class="syntax-call">database</span>(connection)
+past     = <span class="syntax-call">asOf</span>(current, lastQuarter)
 
-proposed = with(current, [
-  grant(team: "Contractors", role: "Billing admin")
+proposed = <span class="syntax-call">with</span>(current, [
+  <span class="syntax-call">grant</span>(team: <span class="syntax-string">"Contractors"</span>, role: <span class="syntax-string">"Billing admin"</span>)
 ])
 
-evaluateAccess(current,  team: "Contractors")  <span class="code-comment">// what is</span>
-evaluateAccess(past,     team: "Contractors")  <span class="code-comment">// what was</span>
-evaluateAccess(proposed, team: "Contractors")  <span class="code-comment">// what could be</span></code></pre>
+<span class="syntax-call">evaluateAccess</span>(current,  team: <span class="syntax-string">"Contractors"</span>)  <span class="syntax-comment">// what is</span>
+<span class="syntax-call">evaluateAccess</span>(past,     team: <span class="syntax-string">"Contractors"</span>)  <span class="syntax-comment">// what was</span>
+<span class="syntax-call">evaluateAccess</span>(proposed, team: <span class="syntax-string">"Contractors"</span>)  <span class="syntax-comment">// what could be</span></code></pre>
 
           <p><code>evaluateAccess</code> does not know which world it received. It sees one complete database value.</p>
 
@@ -121,23 +121,23 @@ evaluateAccess(proposed, team: "Contractors")  <span class="code-comment">// wha
 
           <p>A database value removes that tradeoff. Give the pure function a stable view of the whole database. It is not a copy of all its data. The shell chooses a value, passes it to the core, then performs the returned transaction and effects:</p>
 
-          <pre class="code-block"><code><span class="code-comment">// Functional core</span>
-function decide(db, command):
-  if not allowed(db, command):
+          <pre class="code-block"><code><span class="syntax-comment">// Functional core</span>
+function <span class="syntax-call">decide</span>(db, command):
+  if not <span class="syntax-call">allowed</span>(db, command):
     return rejection
 
-  facts = factsFor(command)
-  nextDb = with(db, facts)
-  effects = effectsFor(nextDb, command)
+  facts = <span class="syntax-call">factsFor</span>(command)
+  nextDb = <span class="syntax-call">with</span>(db, facts)
+  effects = <span class="syntax-call">effectsFor</span>(nextDb, command)
 
   return { facts, effects }
 
-<span class="code-comment">// Imperative shell</span>
-db = database(connection)
-result = decide(db, command)
+<span class="syntax-comment">// Imperative shell</span>
+db = <span class="syntax-call">database</span>(connection)
+result = <span class="syntax-call">decide</span>(db, command)
 
-transact(connection, result.facts)
-send(result.effects)</code></pre>
+<span class="syntax-call">transact</span>(connection, result.facts)
+<span class="syntax-call">send</span>(result.effects)</code></pre>
 
           <p>The core does not have to be starved of context to stay pure. It can query the complete database value, follow relationships, use rules, and derive exactly the view it needs. Yet it still has no authority to change durable state.</p>
 
@@ -149,11 +149,11 @@ send(result.effects)</code></pre>
 
           <p>When earlier database states are themselves database values, the ordinary application query remains useful:</p>
 
-          <pre class="code-block"><code>lastQuarter = asOf(current, quarterEnd)
+          <pre class="code-block"><code>lastQuarter = <span class="syntax-call">asOf</span>(current, quarterEnd)
 
-report = evaluateAccess(
+report = <span class="syntax-call">evaluateAccess</span>(
   lastQuarter,
-  team: "Contractors"
+  team: <span class="syntax-string">"Contractors"</span>
 )</code></pre>
 
           <p>A history view exposes assertions and retractions when the audit trail itself is the question. An as-of value answers ordinary domain questions at a chosen point in time. The rest of the application keeps using the same functions.</p>

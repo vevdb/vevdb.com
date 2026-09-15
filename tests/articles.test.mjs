@@ -74,6 +74,15 @@ test('article and article index use the same desktop content width', () => {
   assert.match(articleStyles, /\.article-index \{\s*width: min\(920px, calc\(100% - 48px\)\);/);
 });
 
+test('article pseudocode uses the homepage syntax highlighting vocabulary', () => {
+  assert.match(article, /class="syntax-call"/);
+  assert.match(article, /class="syntax-string"/);
+  assert.match(article, /class="syntax-comment"/);
+  assert.match(articleStyles, /\.syntax-call \{ color: #68d0d0; \}/);
+  assert.match(articleStyles, /\.syntax-string \{ color: #c5db91; \}/);
+  assert.match(articleStyles, /\.syntax-comment \{ color: #8290a4; \}/);
+});
+
 test('site prose and generated page titles do not use em dashes', () => {
   const emDashPattern = new RegExp([
     '\u2014',
