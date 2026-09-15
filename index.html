@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>VevDB. Native embedded database for history and what-if state</title>
-    <meta name="description" content="VevDB is a small native embedded database with immutable database values, Datalog, queryable history, and hypothetical transactions. No JVM or database server.">
+    <meta name="description" content="VevDB is a small native embedded database with immutable database values, Datalog, queryable history, and hypothetical transactions.">
     <meta name="theme-color" content="#f2f5f3">
     <link rel="canonical" href="https://vevdb.com/">
     <link rel="icon" href="/vev-mark.png" type="image/png">
@@ -62,8 +62,7 @@
           <h1 id="hero-title">Query what is, what was, and what could be.</h1>
           <p class="hero-lede">
             VevDB is a native embedded database with immutable database values,
-            Datalog, queryable history, and hypothetical transactions. No JVM or
-            database server.
+            Datalog, queryable history, and hypothetical transactions.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="/docs/getting-started/" data-analytics-event="getting_started_clicked" data-analytics-location="hero">Get started</a>
@@ -71,8 +70,7 @@
           </div>
           <ul class="deployment-facts">
             <li>Runs in-process</li>
-            <li>No JVM</li>
-            <li>No server</li>
+            <li>In-memory or durable</li>
             <li>macOS, Linux, Windows</li>
           </ul>
         </div>
@@ -183,8 +181,8 @@ result = <span class="syntax-call">decide</span>(db, command)
           <h2 id="native-title">A component you can ship with the application</h2>
           <p>
             Link VevDB into native software and open an in-memory or durable
-            store. There is no transactor service to operate and no managed
-            runtime to bundle or warm up.
+            store. The database engine runs inside the application as a small
+            native library.
           </p>
           <p>
             VevDB focuses on the embedded data model instead of growing into a
