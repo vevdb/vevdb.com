@@ -68,7 +68,7 @@
       <article>
         <header>
           <h1 class="article-title">The Database as a Value</h1>
-          <p class="article-lede">In his 2012 Datomic talk <a href="https://www.infoq.com/presentations/Datomic-Database-Value/"><em>The Database as a Value</em></a>, Rich Hickey presented a deceptively simple idea: a database can be an immutable value. The consequence is striking. An application can hold several complete worlds at once. These can represent the present, last Tuesday, and the result of a transaction that has not happened. Any of them can be passed to the same function. VevDB brings that model to a small native component.</p>
+          <p class="article-lede">In his 2012 Datomic talk <a href="https://www.infoq.com/presentations/Datomic-Database-Value/"><em>The Database as a Value</em></a>, Rich Hickey presented a simple idea: a database can be an immutable value. An application can hold several complete worlds at once: the present, last Tuesday, and the result of a transaction that has not happened. Any of them can be passed to the same function. VevDB brings that model to a small native component.</p>
           <div class="article-meta">
             <span>Andreas Flakstad</span>
             <span><time datetime="2026-09-15">September 15, 2026</time></span>
@@ -81,7 +81,7 @@
 
           <p>The limitation becomes visible when the application needs to ask a different question. Would this permission change expose customer data? Who could access the production console last Tuesday? Can we preview the consequences before granting anything?</p>
 
-          <p>What-if state, historical state, previews, and tests then acquire separate representations. Staging tables, copied objects, audit logs, replay machinery, and repository mocks. The hard part is no longer creating them. It is keeping all those representations faithful to the same domain.</p>
+          <p>Applications often represent what-if state, historical state, previews, and tests separately, using staging tables, copied objects, audit logs, replay machinery, and repository mocks. Every representation must remain consistent with the same domain.</p>
 
           <p>There is another programming model: make the database itself an immutable value.</p>
 
@@ -111,15 +111,17 @@ proposed = <span class="syntax-call">with</span>(current, [
 
           <p><code>with</code> produces a fully queryable successor value. Keep both worlds, run the same rules against each, compare the outcomes, then discard the proposal or transact its facts.</p>
 
+          <p>An as-of value answers ordinary domain questions at a chosen point in time. A history view exposes assertions and retractions when the audit trail itself is the question. Both use the same underlying facts.</p>
+
           <div class="article-note">
-            <p><strong>The useful shift is not merely that snapshots exist.</strong> It is that current, historical, and hypothetical state share the same data model and query interface. Application functions do not need a separate “preview mode.”</p>
+            <p>Current, historical, and hypothetical state share the same data model and query interface. Each can be passed directly into ordinary application functions, without a separate “preview mode.”</p>
           </div>
 
           <h2>The whole database as input to a pure function</h2>
 
-          <p>Functional core / imperative shell splits a program in two. A deterministic core decides what should happen. A thin shell owns I/O and makes it happen. The pattern is easy to recommend until the business logic needs the database. Then the core is either starved of context, fed a carefully assembled object graph, or allowed to reach through a repository and perform I/O.</p>
+          <p>Functional core / imperative shell splits a program in two. A deterministic core decides what should happen. A thin shell owns I/O and makes it happen. The split becomes harder when the business logic needs database access. The core is then either starved of context, fed a carefully assembled object graph, or allowed to reach through a repository and perform I/O.</p>
 
-          <p>A database value removes that tradeoff. Give the pure function a stable view of the whole database. It is not a copy of all its data. The shell chooses a value, passes it to the core, then performs the returned transaction and effects:</p>
+          <p>The shell can instead pass a stable view of the whole database into the pure function. The value is not a copy of all its data. The shell chooses a value, passes it to the core, then performs the returned transaction and effects:</p>
 
           <pre class="code-block"><code><span class="syntax-comment">// Functional core</span>
 function <span class="syntax-call">decide</span>(db, command):
@@ -139,52 +141,29 @@ result = <span class="syntax-call">decide</span>(db, command)
 <span class="syntax-call">transact</span>(connection, result.facts)
 <span class="syntax-call">send</span>(result.effects)</code></pre>
 
-          <p>The core does not have to be starved of context to stay pure. It can query the complete database value, follow relationships, use rules, and derive exactly the view it needs. Yet it still has no authority to change durable state.</p>
+          <p>The core can query the complete database value, follow relationships, use rules, and derive exactly the view it needs without performing I/O or changing durable state.</p>
 
           <p>Tests need no repository mock. Pass <code>decide</code> a different value: a minimal fixture, last Tuesday&rsquo;s database, or a proposed migration.</p>
 
-          <h2>Ask the past the same question</h2>
+          <h2>Where this model fits</h2>
 
-          <p>An audit log tells you what was written. The application usually needs to know what was true.</p>
-
-          <p>When earlier database states are themselves database values, the ordinary application query remains useful:</p>
-
-          <pre class="code-block"><code>lastQuarter = <span class="syntax-call">asOf</span>(current, quarterEnd)
-
-report = <span class="syntax-call">evaluateAccess</span>(
-  lastQuarter,
-  team: <span class="syntax-string">"Contractors"</span>
-)</code></pre>
-
-          <p>A history view exposes assertions and retractions when the audit trail itself is the question. An as-of value answers ordinary domain questions at a chosen point in time. The rest of the application keeps using the same functions.</p>
-
-          <p>A long-running calculation can also keep one coherent database value while new transactions arrive. If it later commits a proposal, normal optimistic checks still apply. Reasoning about a value and changing durable state remain separate operations.</p>
-
-          <h2>One library, two storage models</h2>
-
-          <p>Keep durable domain facts, relationships, and decisions in VevDB. Use the <a href="/docs/sqlite/">bundled SQLite API</a> for caches, sessions, job state, and derived indexes. One native library gives the application two deliberately different tools.</p>
-
-          <h2>Where database values change the design</h2>
-
-          <p>The model matters when an application needs to:</p>
+          <p>This model fits applications that need to:</p>
 
           <ul>
-            <li>preview a change before committing it;</li>
+            <li>preview and compare proposed changes before committing them;</li>
             <li>run today&rsquo;s decision logic against historical state;</li>
-            <li>keep one coherent world during long-running work;</li>
-            <li>compare alternative plans using the same rules;</li>
-            <li>navigate connected domain facts without preparing a second object model.</li>
+            <li>give pure functions and tests complete domain context.</li>
           </ul>
 
-          <p>For straightforward current-state rows, SQLite is usually simpler. Distributed coordination belongs to another class of database.</p>
-
-          <p>The form factor matters most in software that must remain self-contained: desktop applications, developer tools, on-premises products, and small single-node services. VevDB runs in-process as a native embedded database. The native SDK downloads for the current release are about 3–4 MB, including the query engine and bundled SQLite storage layer.</p>
+          <p>For straightforward current-state rows and operational data such as caches, sessions, job state, and derived indexes, SQLite is usually simpler. VevDB includes a <a href="/docs/sqlite/">bundled SQLite API</a> for that state. Distributed coordination belongs to another class of database.</p>
 
           <h2>The database value is the API</h2>
 
-          <p>Once the database is a value, past and proposed state stop requiring separate application models. <code>current</code>, <code>asOf(current, t)</code>, and <code>with(current, facts)</code> flow through the same functions. The same domain logic can ask each value the same questions, without a separate preview repository or historical read model for that purpose.</p>
+          <p>An application built around database values has one path for domain reasoning. The shell chooses a state, the core asks questions, and the connection commits facts. Current, historical, and hypothetical values all follow this path.</p>
 
-          <p><a href="https://docs.datomic.com/transactions/model.html">Datomic established this programming model.</a> VevDB changes where it can live: inside a native application, as a component small enough to ship with it.</p>
+          <p><a href="https://docs.datomic.com/transactions/model.html">Datomic established this programming model.</a> VevDB packages it as a native embedded component for self-contained desktop applications, developer tools, on-premises products, and small services. The current native SDK downloads are about 3–4 MB, including the query engine and bundled SQLite storage layer.</p>
+
+          <p>In application code, current, historical, and hypothetical state all enter through the same interface: the database value.</p>
 
           <section class="article-summary" aria-labelledby="try-title">
             <h2 id="try-title">Try the model</h2>
