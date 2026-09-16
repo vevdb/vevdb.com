@@ -77,13 +77,9 @@
         </header>
 
         <div class="article-body">
-          <p>Most application code receives an ID, a repository, or a connection. Every query therefore reaches into one particular world: whatever happens to be in the database now.</p>
+          <p>Most application code receives an ID, a repository, or a connection. Every query therefore reaches into one particular world: whatever happens to be in the database now. The limitation becomes visible when the application needs to ask a different question. Would this permission change expose customer data? Who could access the production console last Tuesday? Can we preview the consequences before granting anything?</p>
 
-          <p>The limitation becomes visible when the application needs to ask a different question. Would this permission change expose customer data? Who could access the production console last Tuesday? Can we preview the consequences before granting anything?</p>
-
-          <p>Applications often represent what-if state, historical state, previews, and tests separately, using staging tables, copied objects, audit logs, replay machinery, and repository mocks. Every representation must remain consistent with the same domain.</p>
-
-          <p>There is another programming model: make the database itself an immutable value.</p>
+          <p>Applications often represent what-if state, historical state, previews, and tests separately, using staging tables, copied objects, audit logs, replay machinery, and repository mocks. Every representation must remain consistent with the same domain. An immutable database value offers another programming model.</p>
 
           <h2>Change the database value, not the function</h2>
 
@@ -107,9 +103,7 @@ proposed = <span class="syntax-call">with</span>(current, [
 <span class="syntax-call">evaluateAccess</span>(past,     team: <span class="syntax-string">"Contractors"</span>)  <span class="syntax-comment">// what was</span>
 <span class="syntax-call">evaluateAccess</span>(proposed, team: <span class="syntax-string">"Contractors"</span>)  <span class="syntax-comment">// what could be</span></code></pre>
 
-          <p><code>evaluateAccess</code> does not know which world it received. It sees one complete database value.</p>
-
-          <p><code>with</code> produces a fully queryable successor value. Keep both worlds, run the same rules against each, compare the outcomes, then discard the proposal or transact its facts.</p>
+          <p><code>evaluateAccess</code> does not know which world it received. It sees one complete database value. <code>with</code> produces a fully queryable successor value, so the application can keep both worlds, run the same rules against each, compare the outcomes, then discard the proposal or transact its facts.</p>
 
           <p>An as-of value answers ordinary domain questions at a chosen point in time. A history view exposes assertions and retractions when the audit trail itself is the question. Both use the same underlying facts.</p>
 
@@ -141,9 +135,7 @@ result = <span class="syntax-call">decide</span>(db, command)
 <span class="syntax-call">transact</span>(connection, result.facts)
 <span class="syntax-call">send</span>(result.effects)</code></pre>
 
-          <p>The core can query the complete database value, follow relationships, use rules, and derive exactly the view it needs without performing I/O or changing durable state.</p>
-
-          <p>Tests need no repository mock. Pass <code>decide</code> a different value: a minimal fixture, last Tuesday&rsquo;s database, or a proposed migration.</p>
+          <p>The core can query the complete database value, follow relationships, use rules, and derive exactly the view it needs without performing I/O or changing durable state. Tests need no repository mock. Pass <code>decide</code> a different value: a minimal fixture, last Tuesday&rsquo;s database, or a proposed migration.</p>
 
           <h2>Where this model fits</h2>
 
@@ -161,9 +153,7 @@ result = <span class="syntax-call">decide</span>(db, command)
 
           <p>An application built around database values has one path for domain reasoning. The shell chooses a state, the core asks questions, and the connection commits facts. Current, historical, and hypothetical values all follow this path.</p>
 
-          <p><a href="https://docs.datomic.com/transactions/model.html">Datomic established this programming model.</a> VevDB packages it as a native embedded component for self-contained desktop applications, developer tools, on-premises products, and small services. The current native SDK downloads are about 3–4 MB, including the query engine and bundled SQLite storage layer.</p>
-
-          <p>In application code, current, historical, and hypothetical state all enter through the same interface: the database value.</p>
+          <p><a href="https://docs.datomic.com/transactions/model.html">Datomic established this programming model.</a> VevDB packages it as a native embedded component for self-contained desktop applications, developer tools, on-premises products, and small services. The current native SDK downloads are about 3–4 MB, including the query engine and bundled SQLite storage layer. In application code, current, historical, and hypothetical state all enter through the same interface: the database value.</p>
 
           <section class="article-summary" aria-labelledby="try-title">
             <h2 id="try-title">Try the model</h2>
