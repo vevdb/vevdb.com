@@ -83,6 +83,21 @@ test('article pseudocode uses the homepage syntax highlighting vocabulary', () =
   assert.match(articleStyles, /\.syntax-comment \{ color: #8290a4; \}/);
 });
 
+test('article attributes the model to Datomic and derives values from facts', () => {
+  assert.match(article, /href="https:\/\/docs\.datomic\.com\/"/);
+  assert.match(article, /The Database as a Value<\/em>/);
+  assert.match(article, /Deconstructing the Database<\/em>/);
+
+  const factsSection = article.indexOf('<h2>Facts accumulate</h2>');
+  const valuesSection = article.indexOf('<h2>The database becomes a value</h2>');
+  const applicationSection = article.indexOf('<h2>Change the database value, not the function</h2>');
+
+  assert.ok(factsSection > -1);
+  assert.ok(valuesSection > factsSection);
+  assert.ok(applicationSection > valuesSection);
+  assert.doesNotMatch(article, /<h2>Where this model fits<\/h2>/);
+});
+
 test('site prose and generated page titles do not use em dashes', () => {
   const emDashPattern = new RegExp([
     '\u2014',

@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>The Database as a Value. VevDB</title>
-    <meta name="description" content="Rich Hickey’s Datomic model made the database an immutable value. See what it enables and why VevDB brings it to native applications.">
+    <title>The Database as a Value, Native and Embedded. VevDB</title>
+    <meta name="description" content="Why Datomic accumulates facts instead of overwriting rows, how those facts become database values, and how VevDB brings the model to native software.">
     <meta name="author" content="Andreas Flakstad">
     <meta name="theme-color" content="#f2f5f3">
     <link rel="canonical" href="https://vevdb.com/articles/the-database-as-a-value/">
@@ -15,28 +15,29 @@
 
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="VevDB">
-    <meta property="og:title" content="The Database as a Value">
-    <meta property="og:description" content="Rich Hickey’s Datomic model made the database an immutable value. See how VevDB brings it to native applications.">
+    <meta property="og:title" content="The Database as a Value, Native and Embedded">
+    <meta property="og:description" content="Why Datomic accumulates facts instead of overwriting rows, how those facts become database values, and how VevDB brings the model to native software.">
     <meta property="og:url" content="https://vevdb.com/articles/the-database-as-a-value/">
     <meta property="og:image" content="https://vevdb.com/social/database-as-a-value.png">
     <meta property="og:image:alt" content="The Database as a Value. Current, Past, Proposed">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="article:published_time" content="2026-09-15">
+    <meta property="article:modified_time" content="2026-09-17">
     <meta property="article:author" content="Andreas Flakstad">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="The Database as a Value">
-    <meta name="twitter:description" content="Rich Hickey’s Datomic model made the database an immutable value. See how VevDB brings it to native applications.">
+    <meta name="twitter:title" content="The Database as a Value, Native and Embedded">
+    <meta name="twitter:description" content="Why Datomic accumulates facts instead of overwriting rows, how those facts become database values, and how VevDB brings the model to native software.">
     <meta name="twitter:image" content="https://vevdb.com/social/database-as-a-value.png">
 
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "TechArticle",
-        "headline": "The Database as a Value",
-        "description": "Rich Hickey’s Datomic model made the database an immutable value. See what it enables and why VevDB brings it to native applications.",
+        "headline": "The Database as a Value, Native and Embedded",
+        "description": "Why Datomic accumulates facts instead of overwriting rows, how those facts become database values, and how VevDB brings the model to native software.",
         "datePublished": "2026-09-15",
-        "dateModified": "2026-09-15",
+        "dateModified": "2026-09-17",
         "author": {
           "@type": "Person",
           "name": "Andreas Flakstad"
@@ -67,23 +68,43 @@
     <main id="main" class="article-shell">
       <article>
         <header>
-          <h1 class="article-title">The Database as a Value</h1>
-          <p class="article-lede">In his 2012 Datomic talk <a href="https://www.infoq.com/presentations/Datomic-Database-Value/"><em>The Database as a Value</em></a>, Rich Hickey presented a simple idea: a database can be an immutable value. An application can hold several complete worlds at once: the present, last Tuesday, and the result of a transaction that has not happened. Any of them can be passed to the same function. VevDB brings that model to a small native component.</p>
+          <h1 class="article-title">The Database as a Value, Native and Embedded</h1>
+          <p class="article-lede">Datomic starts with a simple observation about the world: facts happen at a point in time. A person changes role, a customer moves, a policy is approved. The new fact does not erase the old one; both belong to the history of what happened. In his 2012 talks <a href="https://www.infoq.com/presentations/Datomic-Database-Value/"><em>The Database as a Value</em></a> and <a href="https://www.infoq.com/presentations/Deconstructing-Database"><em>Deconstructing the Database</em></a>, Rich Hickey showed how a database built by accumulating facts can itself become an immutable value. VevDB brings much of that model to native embedded software.</p>
           <div class="article-meta">
             <span>Andreas Flakstad</span>
-            <span><time datetime="2026-09-15">September 15, 2026</time></span>
-            <span>5 minute read</span>
+            <span>Published <time datetime="2026-09-15">September 15, 2026</time>, updated <time datetime="2026-09-17">September 17, 2026</time></span>
+            <span>7 minute read</span>
           </div>
         </header>
 
         <div class="article-body">
-          <p>Most application code receives an ID, a repository, or a connection. Every query therefore reaches into one particular world: whatever happens to be in the database now. The limitation becomes visible when the application needs to ask a different question. Would this permission change expose customer data? Who could access the production console last Tuesday? Can we preview the consequences before granting anything?</p>
+          <p>Suppose a team&rsquo;s role is stored in a SQL row. An <code>UPDATE</code> replaces <code>viewer</code> with <code>billing_admin</code>, and the row now answers the most common question: what is the role today? If the application later asks who could reach the billing system last Tuesday, why the role changed, or what would become reachable after another change, the latest row has no answer. We usually add an audit table, triggers, an event log, a staging copy, or application objects for the proposed state. Each addition describes the same domain in another form that must remain faithful to the first.</p>
 
-          <p>Applications often represent what-if state, historical state, previews, and tests separately, using staging tables, copied objects, audit logs, replay machinery, and repository mocks. Every representation must remain consistent with the same domain. An immutable database value offers another programming model.</p>
+          <p>Datomic approaches the problem more like a tree growing rings than a whiteboard being erased and rewritten. Hickey used this image in <em>Deconstructing the Database</em>: new information forms another ring around what was already known, while the earlier rings remain where they were. The current database is still easy to see, but its history has not been painted over. This begins with a smaller unit than the row.</p>
+
+          <h2>Facts accumulate</h2>
+
+          <p><a href="https://docs.datomic.com/">Datomic calls an atomic fact a datom.</a> A datom says that an entity has a value for an attribute, and records the transaction that introduced the assertion or retraction. VevDB uses the same five-part shape:</p>
+
+          <pre class="code-block"><code>entity  attribute  value  transaction  added?</code></pre>
+
+          <p>A transaction appends assertions and retractions. Current state is the set of assertions that have not later been retracted. Changing a team&rsquo;s role records the end of one assertion and the beginning of another; it does not reach back and rewrite what the earlier transaction said. The entity is therefore closer to a growing dossier than a row on a preprinted form. It has a stable identity and whatever facts are known about it. Different entities can carry different attributes, references use the same representation as scalar values, and a many-valued relationship becomes several facts rather than a special container.</p>
+
+          <p>This fact model is useful even when the application only asks about the present. A domain can grow by adding attributes and relationships around existing identities instead of forcing every entity through one fixed row shape. Datomic gives attributes a schema for type, cardinality, uniqueness, and other constraints while allowing any entity to possess any attribute. VevDB follows that attribute-oriented model, supports typed schema for value type, cardinality, identity, components, and tuples, and also accepts schemaless attributes.</p>
+
+          <h2>The database becomes a value</h2>
+
+          <p>Every transaction adds another ring of facts. Choose a transaction basis and those rings form a complete database value: a stable view of what the database knew at that point. The live connection may advance as new transactions arrive, while a value already held by application code stays where it was captured. Holding that value does not copy all the data any more than naming an edition of an atlas copies every map. It identifies one coherent edition that queries can continue to use.</p>
+
+          <p><a href="https://docs.datomic.com/transactions/model.html">Datomic&rsquo;s transaction model</a> carries the idea into the API. <code>with</code> is a pure function from a database value and proposed facts to a new database value. It is like sketching the next edition in a private branch: the application can inspect the result without advancing the shared connection. <code>transact</code> runs the same semantic checks and makes the accepted facts durable. VevDB mirrors this distinction with <code>db-with</code> and connection transactions.</p>
+
+          <div class="article-note">
+            <p>The connection moves forward. A database value stays at the edition the application captured.</p>
+          </div>
 
           <h2>Change the database value, not the function</h2>
 
-          <p>Imagine an access-control editor. Before granting a team a new role, it must discover which systems become reachable and which security policies would be broken. Express that analysis as an ordinary function whose first argument is a database value:</p>
+          <p>Return to the access-control example. Before granting a team a new role, the application must discover which systems become reachable and which security policies would be broken. The analysis can be an ordinary function whose first argument is a database value:</p>
 
           <pre class="code-block"><code><span class="syntax-comment">// Pseudocode. Values in, values out.</span>
 function <span class="syntax-call">evaluateAccess</span>(db, team):
@@ -103,9 +124,7 @@ proposed = <span class="syntax-call">with</span>(current, [
 <span class="syntax-call">evaluateAccess</span>(past,     team: <span class="syntax-string">"Contractors"</span>)  <span class="syntax-comment">// what was</span>
 <span class="syntax-call">evaluateAccess</span>(proposed, team: <span class="syntax-string">"Contractors"</span>)  <span class="syntax-comment">// what could be</span></code></pre>
 
-          <p><code>evaluateAccess</code> does not know which world it received. It sees one complete database value. <code>with</code> produces a fully queryable successor value, so the application can keep both worlds, run the same rules against each, compare the outcomes, then discard the proposal or transact its facts.</p>
-
-          <p>An as-of value answers ordinary domain questions at a chosen point in time. A history view exposes assertions and retractions when the audit trail itself is the question. Both use the same underlying facts.</p>
+          <p><code>evaluateAccess</code> receives one coherent edition of the world. It uses the same queries whether that edition is current, historical, or hypothetical. The application can keep the current and proposed values side by side, run the same rules against each, compare the outcomes, then discard the proposal or transact its facts. An as-of value answers ordinary domain questions at a chosen point in time, while a history view opens the ledger and exposes the assertions and retractions themselves.</p>
 
           <div class="article-note">
             <p>Current, historical, and hypothetical state share the same data model and query interface. Each can be passed directly into ordinary application functions, without a separate “preview mode.”</p>
@@ -113,9 +132,7 @@ proposed = <span class="syntax-call">with</span>(current, [
 
           <h2>The whole database as input to a pure function</h2>
 
-          <p>Functional core / imperative shell splits a program in two. A deterministic core decides what should happen. A thin shell owns I/O and makes it happen. The split becomes harder when the business logic needs database access. The core is then either starved of context, fed a carefully assembled object graph, or allowed to reach through a repository and perform I/O.</p>
-
-          <p>The shell can instead pass a stable view of the whole database into the pure function. The value is not a copy of all its data. The shell chooses a value, passes it to the core, then performs the returned transaction and effects:</p>
+          <p>Functional core / imperative shell is a useful architecture for keeping I/O at the edges of a program. A deterministic core receives values and decides what should happen, while a thin shell loads inputs, persists results, and performs external effects. Tests can call the core directly without starting services or mocking its surroundings. The division becomes awkward when a decision needs broad knowledge of the domain. The core is often starved of context, fed a carefully assembled object graph, or allowed to reach through a repository and perform I/O. A database value gives the shell another option: pass one stable view of the whole database into the core, let the core derive the exact view it needs, then perform the returned transaction and effects outside it.</p>
 
           <pre class="code-block"><code><span class="syntax-comment">// Functional core</span>
 function <span class="syntax-call">decide</span>(db, command):
@@ -137,23 +154,17 @@ result = <span class="syntax-call">decide</span>(db, command)
 
           <p>The core can query the complete database value, follow relationships, use rules, and derive exactly the view it needs without performing I/O or changing durable state. Tests need no repository mock. Pass <code>decide</code> a different value: a minimal fixture, last Tuesday&rsquo;s database, or a proposed migration.</p>
 
-          <h2>Where this model fits</h2>
+          <h2>One model for a changing world</h2>
 
-          <p>This model fits applications that need to:</p>
+          <p>The pieces reinforce each other. Atomic facts make entities flexible and relationships explicit. Transactions place those facts in time and preserve their provenance. Accretion turns the database into a succession of stable values. Datalog, pull, and entity views can then ask the same domain questions of any one of those values. An application may begin with the current state and flexible modeling, then later add audit views, historical reports, speculative planning, or long-running calculations without inventing a second representation of the domain.</p>
 
-          <ul>
-            <li>preview and compare proposed changes before committing them;</li>
-            <li>run today&rsquo;s decision logic against historical state;</li>
-            <li>give pure functions and tests complete domain context.</li>
-          </ul>
+          <p>Operational state can remain outside the permanent fact model. Caches, sessions, job state, and derived indexes often fit ordinary mutable tables, so VevDB includes a <a href="/docs/sqlite/">bundled SQLite API</a> for that data. The fact database can hold what the application wants to know and remember about its domain, while SQLite handles state whose value lies in being current and replaceable.</p>
 
-          <p>For straightforward current-state rows and operational data such as caches, sessions, job state, and derived indexes, SQLite is usually simpler. VevDB includes a <a href="/docs/sqlite/">bundled SQLite API</a> for that state. Distributed coordination belongs to another class of database.</p>
+          <h2>What VevDB contributes</h2>
 
-          <h2>The database value is the API</h2>
+          <p>Datomic established this information model and the APIs that made it practical. VevDB&rsquo;s contribution is a different implementation and deployment form: a native embedded component for self-contained desktop applications, developer tools, on-premises products, and small services. The current native SDK downloads are about 3–4 MB, including the query engine and bundled SQLite storage layer.</p>
 
-          <p>An application built around database values has one path for domain reasoning. The shell chooses a state, the core asks questions, and the connection commits facts. Current, historical, and hypothetical values all follow this path.</p>
-
-          <p><a href="https://docs.datomic.com/transactions/model.html">Datomic established this programming model.</a> VevDB packages it as a native embedded component for self-contained desktop applications, developer tools, on-premises products, and small services. The current native SDK downloads are about 3–4 MB, including the query engine and bundled SQLite storage layer. In application code, current, historical, and hypothetical state all enter through the same interface: the database value.</p>
+          <p>VevDB implements datoms, data-oriented transactions, attribute schema, Datalog, pull, entities, index access, history, <code>as-of</code>, <code>since</code>, and <code>db-with</code>. It follows much of Datomic&rsquo;s familiar model while documenting <a href="/docs/datomic-syntax/">intentional differences</a>. The implementation is native and embedded; the underlying idea remains Datomic&rsquo;s: facts accumulate, the past stays available, and the database enters application code as a value.</p>
 
           <section class="article-summary" aria-labelledby="try-title">
             <h2 id="try-title">Try the model</h2>
