@@ -96,6 +96,11 @@ test('article attributes the model to Datomic and derives values from facts', ()
   assert.ok(valuesSection > factsSection);
   assert.ok(applicationSection > valuesSection);
   assert.doesNotMatch(article, /<h2>Where this model fits<\/h2>/);
+
+  const articleBody = article.indexOf('<p class="article-lede">');
+  const vevSection = article.indexOf('<h2>What VevDB contributes</h2>');
+  assert.ok(vevSection > articleBody);
+  assert.doesNotMatch(article.slice(articleBody, vevSection), /VevDB/);
 });
 
 test('site prose and generated page titles do not use em dashes', () => {

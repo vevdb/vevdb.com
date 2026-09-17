@@ -69,7 +69,7 @@
       <article>
         <header>
           <h1 class="article-title">The Database as a Value, Native and Embedded</h1>
-          <p class="article-lede">Datomic starts with a simple observation about the world: facts happen at a point in time. A person changes role, a customer moves, a policy is approved. The new fact does not erase the old one; both belong to the history of what happened. In his 2012 talks <a href="https://www.infoq.com/presentations/Datomic-Database-Value/"><em>The Database as a Value</em></a> and <a href="https://www.infoq.com/presentations/Deconstructing-Database"><em>Deconstructing the Database</em></a>, Rich Hickey showed how a database built by accumulating facts can itself become an immutable value. VevDB brings much of that model to native embedded software.</p>
+          <p class="article-lede">Datomic starts with a simple observation about the world: facts happen at a point in time. A person changes role, a customer moves, a policy is approved. The new fact does not erase the old one; both belong to the history of what happened. In his 2012 talks <a href="https://www.infoq.com/presentations/Datomic-Database-Value/"><em>The Database as a Value</em></a> and <a href="https://www.infoq.com/presentations/Deconstructing-Database"><em>Deconstructing the Database</em></a>, Rich Hickey showed how a database built by accumulating facts can itself become an immutable value.</p>
           <div class="article-meta">
             <span>Andreas Flakstad</span>
             <span>Published <time datetime="2026-09-15">September 15, 2026</time>, updated <time datetime="2026-09-17">September 17, 2026</time></span>
@@ -84,19 +84,19 @@
 
           <h2>Facts accumulate</h2>
 
-          <p><a href="https://docs.datomic.com/">Datomic calls an atomic fact a datom.</a> A datom says that an entity has a value for an attribute, and records the transaction that introduced the assertion or retraction. VevDB uses the same five-part shape:</p>
+          <p><a href="https://docs.datomic.com/">Datomic calls an atomic fact a datom.</a> A datom says that an entity has a value for an attribute, and records the transaction that introduced the assertion or retraction. It has five parts:</p>
 
           <pre class="code-block"><code>entity  attribute  value  transaction  added?</code></pre>
 
           <p>A transaction appends assertions and retractions. Current state is the set of assertions that have not later been retracted. Changing a team&rsquo;s role records the end of one assertion and the beginning of another; it does not reach back and rewrite what the earlier transaction said. The entity is therefore closer to a growing dossier than a row on a preprinted form. It has a stable identity and whatever facts are known about it. Different entities can carry different attributes, references use the same representation as scalar values, and a many-valued relationship becomes several facts rather than a special container.</p>
 
-          <p>This fact model is useful even when the application only asks about the present. A domain can grow by adding attributes and relationships around existing identities instead of forcing every entity through one fixed row shape. Datomic gives attributes a schema for type, cardinality, uniqueness, and other constraints while allowing any entity to possess any attribute. VevDB follows that attribute-oriented model, supports typed schema for value type, cardinality, identity, components, and tuples, and also accepts schemaless attributes.</p>
+          <p>This fact model is useful even when the application only asks about the present. A domain can grow by adding attributes and relationships around existing identities instead of forcing every entity through one fixed row shape. Datomic gives attributes a schema for type, cardinality, uniqueness, and other constraints while allowing any entity to possess any attribute.</p>
 
           <h2>The database becomes a value</h2>
 
           <p>Every transaction adds another ring of facts. Choose a transaction basis and those rings form a complete database value: a stable view of what the database knew at that point. The live connection may advance as new transactions arrive, while a value already held by application code stays where it was captured. Holding that value does not copy all the data any more than naming an edition of an atlas copies every map. It identifies one coherent edition that queries can continue to use.</p>
 
-          <p><a href="https://docs.datomic.com/transactions/model.html">Datomic&rsquo;s transaction model</a> carries the idea into the API. <code>with</code> is a pure function from a database value and proposed facts to a new database value. It is like sketching the next edition in a private branch: the application can inspect the result without advancing the shared connection. <code>transact</code> runs the same semantic checks and makes the accepted facts durable. VevDB mirrors this distinction with <code>db-with</code> and connection transactions.</p>
+          <p><a href="https://docs.datomic.com/transactions/model.html">Datomic&rsquo;s transaction model</a> carries the idea into the API. <code>with</code> is a pure function from a database value and proposed facts to a new database value. It is like sketching the next edition in a private branch: the application can inspect the result without advancing the shared connection. <code>transact</code> runs the same semantic checks and makes the accepted facts durable.</p>
 
           <div class="article-note">
             <p>The connection moves forward. A database value stays at the edition the application captured.</p>
@@ -158,11 +158,11 @@ result = <span class="syntax-call">decide</span>(db, command)
 
           <p>The pieces reinforce each other. Atomic facts make entities flexible and relationships explicit. Transactions place those facts in time and preserve their provenance. Accretion turns the database into a succession of stable values. Datalog, pull, and entity views can then ask the same domain questions of any one of those values. An application may begin with the current state and flexible modeling, then later add audit views, historical reports, speculative planning, or long-running calculations without inventing a second representation of the domain.</p>
 
-          <p>Operational state can remain outside the permanent fact model. Caches, sessions, job state, and derived indexes often fit ordinary mutable tables, so VevDB includes a <a href="/docs/sqlite/">bundled SQLite API</a> for that data. The fact database can hold what the application wants to know and remember about its domain, while SQLite handles state whose value lies in being current and replaceable.</p>
-
           <h2>What VevDB contributes</h2>
 
-          <p>Datomic established this information model and the APIs that made it practical. VevDB&rsquo;s contribution is a different implementation and deployment form: a native embedded component for self-contained desktop applications, developer tools, on-premises products, and small services. The current native SDK downloads are about 3–4 MB, including the query engine and bundled SQLite storage layer.</p>
+          <p>The model described so far comes from Datomic. VevDB adopts much of it and provides a different implementation and deployment form: a native embedded component for self-contained desktop applications, developer tools, on-premises products, and small services. The current native SDK downloads are about 3–4 MB, including the query engine and bundled SQLite storage layer.</p>
+
+          <p>Operational state can remain outside the permanent fact model. Caches, sessions, job state, and derived indexes often fit ordinary mutable tables, so VevDB includes a <a href="/docs/sqlite/">bundled SQLite API</a> for that data. The fact database can hold what the application wants to know and remember about its domain, while SQLite handles state whose value lies in being current and replaceable.</p>
 
           <p>VevDB implements datoms, data-oriented transactions, attribute schema, Datalog, pull, entities, index access, history, <code>as-of</code>, <code>since</code>, and <code>db-with</code>. It follows much of Datomic&rsquo;s familiar model while documenting <a href="/docs/datomic-syntax/">intentional differences</a>. The implementation is native and embedded; the underlying idea remains Datomic&rsquo;s: facts accumulate, the past stays available, and the database enters application code as a value.</p>
 
