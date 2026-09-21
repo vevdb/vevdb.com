@@ -28,6 +28,15 @@ test('homepage and article index link to the database-value article', () => {
   assert.match(articleIndex, new RegExp(route));
 });
 
+test('public and generated footers identify the operator and contact email', () => {
+  const docsBuilder = fs.readFileSync(path.join(repositoryRoot, 'scripts/build-docs.mjs'), 'utf8');
+  for (const source of [homepage, articleIndex, article, docsBuilder]) {
+    assert.match(source, /Flakstad Software AS/);
+    assert.match(source, /Org\. no\. 935 382 017/);
+    assert.match(source, /mailto:hello@vevdb\.com/);
+  }
+});
+
 test('article has canonical, sharing, structured data, and analytics metadata', () => {
   assert.match(article, /<link rel="canonical" href="https:\/\/vevdb\.com\/articles\/the-database-as-a-value\/">/);
   assert.match(article, /<meta property="og:type" content="article">/);

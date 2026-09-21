@@ -247,6 +247,7 @@ code, pre { font-family: var(--mono); }
 .article-footer {
   justify-content: space-between;
   gap: 2rem;
+  flex-wrap: wrap;
   padding: 2rem 0 3rem;
   border-top: 1px solid var(--line);
   color: var(--muted);

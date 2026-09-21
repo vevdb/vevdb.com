@@ -248,6 +248,7 @@ a:focus-visible {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+  flex-wrap: wrap;
   margin-top: 4rem;
   padding-top: 1.2rem;
   border-top: 1px solid var(--line);

@@ -584,6 +584,7 @@ footer li { margin-bottom: 0.35rem; }
   grid-column: 1 / -1;
   justify-content: space-between;
   gap: 1.5rem;
+  flex-wrap: wrap;
   margin-top: 0.5rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--line);

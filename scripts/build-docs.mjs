@@ -148,6 +148,7 @@ function pageTemplate(config, page) {
     '        <footer class="docs-footer">',
     '          <span>' + escapeHtml(config.siteName) + ' documentation</span>',
     '          <span><a href="' + escapeHtml(config.licenseUrl) + '">' + escapeHtml(config.licenseName) + '</a></span>',
+    '          <span>Flakstad Software AS · Org. no. 935 382 017 · <a href="mailto:hello@vevdb.com">hello@vevdb.com</a></span>',
     '        </footer>',
     '      </main>',
     '    </div>',
